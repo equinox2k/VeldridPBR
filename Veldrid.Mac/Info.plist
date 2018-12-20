@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleName</key>
-	<string>VeldridNSViewExample</string>
+	<string>Veldrid.Mac</string>
 	<key>CFBundleIdentifier</key>
-	<string>mellinoe.VeldridNSViewExample</string>
+	<string>mellinoe.Veldrid.Mac</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>CFBundleVersion</key>

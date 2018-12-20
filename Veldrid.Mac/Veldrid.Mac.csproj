@@ -21,7 +21,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <EnableCodeSigning>false</EnableCodeSigning>
-    <CodeSigningKey>Mac Developer</CodeSigningKey>
+    <EnableCodeSigning>false</EnableCodeSigning>
     <CreatePackage>false</CreatePackage>
     <EnablePackageSigning>false</EnablePackageSigning>
     <IncludeMonoRuntime>false</IncludeMonoRuntime>
@@ -30,6 +30,9 @@
     <PlatformTarget>x86</PlatformTarget>
     <AOTMode>None</AOTMode>
     <PackageSigningKey>3rd Party Mac Developer Installer</PackageSigningKey>
+    <ConsolePause>true</ConsolePause>
+    <CodeSigningKey>Mac Developer</CodeSigningKey>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugType>pdbonly</DebugType>
@@ -46,6 +49,7 @@
     <LinkMode>SdkOnly</LinkMode>
     <PlatformTarget>x86</PlatformTarget>
     <AOTMode>None</AOTMode>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -95,6 +99,11 @@
     <Reference Include="Veldrid">
       <HintPath>..\packages\Veldrid.4.5.0\lib\netstandard2.0\Veldrid.dll</HintPath>
     </Reference>
+    <Reference Include="Veldrid.SPIRV">
+      <HintPath>..\packages\Veldrid.SPIRV.1.0.5\lib\netstandard2.0\Veldrid.SPIRV.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Numerics.Vectors" />
+    <Reference Include="System.Numerics" />
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json" />
@@ -117,21 +126,50 @@
     <None Include="Info.plist" />
     <None Include="Entitlements.plist" />
     <None Include="packages.config" />
+    <None Include="Shaders\DepthLimitedBlur.frag" />
+    <None Include="Shaders\DepthLimitedBlur.vert" />
+    <None Include="Shaders\DepthNormal.frag" />
+    <None Include="Shaders\DepthNormal.vert" />
+    <None Include="Shaders\Model.frag" />
+    <None Include="Shaders\Model.vert" />
+    <None Include="Shaders\Output.frag" />
+    <None Include="Shaders\Output.vert" />
+    <None Include="Shaders\Readme.txt" />
+    <None Include="Shaders\Sao.frag" />
+    <None Include="Shaders\Sao.vert" />
+    <None Include="Shaders\Skybox.frag" />
+    <None Include="Shaders\Skybox.vert" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
     <Compile Include="ViewController.cs" />
     <Compile Include="VeldridView.cs" />
+    <Compile Include="ResourceLoader.cs" />
+    <Compile Include="ProcessedTexture.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Main.storyboard" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ShaderLib\ShaderLib.csproj">
-      <Project>{AFECDB67-74BC-4CD9-BF4C-CD0427B276BE}</Project>
-      <Name>ShaderLib</Name>
-    </ProjectReference>
+    <EmbeddedResource Include="Shaders\DepthLimitedBlur.frag.spv" />
+    <EmbeddedResource Include="Shaders\DepthLimitedBlur.vert.spv" />
+    <EmbeddedResource Include="Shaders\DepthNormal.frag.spv" />
+    <EmbeddedResource Include="Shaders\DepthNormal.vert.spv" />
+    <EmbeddedResource Include="Shaders\Model.frag.spv" />
+    <EmbeddedResource Include="Shaders\Model.vert.spv" />
+    <EmbeddedResource Include="Shaders\Output.frag.spv" />
+    <EmbeddedResource Include="Shaders\Output.vert.spv" />
+    <EmbeddedResource Include="Shaders\Sao.frag.spv" />
+    <EmbeddedResource Include="Shaders\Sao.vert.spv" />
+    <EmbeddedResource Include="Shaders\Skybox.frag.spv" />
+    <EmbeddedResource Include="Shaders\Skybox.vert.spv" />
+  </ItemGroup>
+  <ItemGroup>
+    <NativeReference Include="..\packages\Veldrid.SPIRV.1.0.5\runtimes\osx-x64\native\libveldrid-spirv.dylib">
+      <Kind>Dynamic</Kind>
+      <SmartLink>False</SmartLink>
+    </NativeReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
   <Import Project="..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" />
