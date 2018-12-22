@@ -3,14 +3,14 @@
 #define KERNEL_RADIUS 8
 #define EPSILON 1e-6
 
-layout(set = 0, binding = 0) uniform State
+layout(set = 0, binding = 0) uniform state
 {
     float cameraNear;
     float cameraFar;
     float depthCutOff;
     vec2 sampleUvOffsets[KERNEL_RADIUS + 1];
     float sampleWeights[KERNEL_RADIUS + 1];
-} state;
+};
 
 layout(set = 0, binding = 1) uniform texture2D textureDiffuse;
 layout(set = 0, binding = 2) uniform sampler textureDiffuseSampler;

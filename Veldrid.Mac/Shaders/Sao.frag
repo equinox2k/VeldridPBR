@@ -7,23 +7,64 @@
 #define PI2 6.28318530718
 #define EPSILON 1e-6
 
-layout(set = 0, binding = 0) uniform State
+layout(set = 1, binding = 0) uniform CameraNear
 {
-    float cameraNear;
-    float cameraFar;
-    mat4 projectionMatrix;
-    mat4 inverseProjectionMatrix;
-    float scale;
-    float intensity;
-    float bias;
-    float kernelRadius;
-    float minResolution;
-    vec2 size;
-    float seed;
-} state;
+    float uCameraNear;
+};
 
-layout(set = 0, binding = 1) uniform texture2D textureDepthNormal;
-layout(set = 0, binding = 2) uniform sampler textureDepthNormalSampler;
+layout(set = 1, binding = 1) uniform CameraFar
+{
+    float uCameraFar;
+};
+
+layout(set = 1, binding = 2) uniform ProjectionMatrix
+{
+    mat4 uProjectionMatrix;
+};
+
+layout(set = 1, binding = 3) uniform InverseProjectionMatrix
+{
+    mat4 uInverseProjectionMatrix;
+};
+
+layout(set = 1, binding = 4) uniform Scale
+{
+    float uScale;
+};
+
+layout(set = 1, binding = 5) uniform Intensity
+{
+    float uIntensity;
+};
+
+layout(set = 1, binding = 6) uniform Bias
+{
+    float uBias;
+};
+
+layout(set = 1, binding = 7) uniform KernelRadius
+{
+    float uKernelRadius;
+};
+
+layout(set = 1, binding = 8) uniform MinResolution
+{
+    float uMinResolution;
+};
+
+layout(set = 1, binding = 9) uniform Size
+{
+    vec2 uSize;
+};
+
+layout(set = 1, binding = 10) uniform Seed
+{
+    float uSeed;
+};
+
+layout(set = 1, binding = 11) uniform texture2D TextureDepthNormal;
+
+layout(set = 1, binding = 12) uniform sampler PointSampler;
 
 layout(location = 0) in vec2 iTexCoord;
 
@@ -44,14 +85,14 @@ float perspectiveDepthToViewZ(const in float invClipZ, const in float near, cons
 }
 
 float getViewZ(const in float depth) {
-    return perspectiveDepthToViewZ(depth, state.cameraNear, state.cameraFar);
+    return perspectiveDepthToViewZ(depth, uCameraNear, uCameraFar);
 }
 
 vec3 getViewPosition(const in vec2 screenPosition, const in float depth, const in float viewZ) {
-    float clipW = state.projectionMatrix[2][3] * viewZ + state.projectionMatrix[3][3];
+    float clipW = uProjectionMatrix[2][3] * viewZ + uProjectionMatrix[3][3];
     vec4 clipPosition = vec4((vec3(screenPosition, depth) - 0.5) * 2.0, 1.0);
     clipPosition *= clipW;
-    return (state.inverseProjectionMatrix * clipPosition).xyz;
+    return (uInverseProjectionMatrix * clipPosition).xyz;
 }
 
 float DecodeFloatRG(vec2 enc)
@@ -72,12 +113,12 @@ vec3 DecodeViewNormalStereo(vec4 enc4)
 }
 
 vec3 getViewNormal(const in vec2 screenPosition) {
-    vec4 textureColor = texture(sampler2D(textureDepthNormal, textureDepthNormalSampler), screenPosition);
+    vec4 textureColor = texture(sampler2D(TextureDepthNormal, PointSampler), screenPosition);
     return DecodeViewNormalStereo(textureColor);
 }
 
 float getDepth(const in vec2 screenPosition) {
-    vec4 textureColor = texture(sampler2D(textureDepthNormal, textureDepthNormalSampler), screenPosition);
+    vec4 textureColor = texture(sampler2D(TextureDepthNormal, PointSampler), screenPosition);
     return DecodeFloatRG(textureColor.zw);
 }
 
@@ -88,18 +129,18 @@ float getOcclusion(const in vec3 centerViewPosition, const in vec3 centerViewNor
     vec3 viewDelta = sampleViewPosition - centerViewPosition;
     float viewDistance = length(viewDelta);
     float scaledScreenDistance = scaleDividedByCameraFar * viewDistance;
-    return max(0.0, (dot(centerViewNormal, viewDelta) - minResolutionMultipliedByCameraFar) / scaledScreenDistance - state.bias) / (1.0 + pow2(scaledScreenDistance));
+    return max(0.0, (dot(centerViewNormal, viewDelta) - minResolutionMultipliedByCameraFar) / scaledScreenDistance - uBias) / (1.0 + pow2(scaledScreenDistance));
 }
 
 const float ANGLE_STEP = PI2 * float( NUM_RINGS ) / float( NUM_SAMPLES );
 const float INV_NUM_SAMPLES = 1.0 / float(NUM_SAMPLES);
 
 float getAmbientOcclusion(const in vec3 centerViewPosition) {
-    scaleDividedByCameraFar = state.scale / state.cameraFar;
-    minResolutionMultipliedByCameraFar = state.minResolution * state.cameraFar;
+    scaleDividedByCameraFar = uScale / uCameraFar;
+    minResolutionMultipliedByCameraFar = uMinResolution * uCameraFar;
     vec3 centerViewNormal = getViewNormal(iTexCoord);
-    float angle = rand(iTexCoord + state.seed) * PI2;
-    vec2 radius = vec2(state.kernelRadius * INV_NUM_SAMPLES) / state.size;
+    float angle = rand(iTexCoord + uSeed) * PI2;
+    vec2 radius = vec2(uKernelRadius * INV_NUM_SAMPLES) / uSize;
     vec2 radiusStep = radius;
     float occlusionSum = 0.0;
     float weightSum = 0.0;
@@ -117,7 +158,7 @@ float getAmbientOcclusion(const in vec3 centerViewPosition) {
         weightSum += 1.0;
     }
     if (weightSum == 0.0) discard;
-    return occlusionSum * (state.intensity / weightSum);
+    return occlusionSum * (uIntensity / weightSum);
 }
 
 void main() {

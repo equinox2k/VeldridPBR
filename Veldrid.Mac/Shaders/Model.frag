@@ -1,32 +1,67 @@
 #version 450
 
-layout(set = 0, binding = 0) uniform State
+layout(set = 1, binding = 0) uniform DiffuseColor
 {
-    vec4 diffuseColor;
-    int useTextureDiffuse;
-    int useTextureBumpmap;
-    int useTextureEffect;
-    vec4 effect;
-    vec3 lightDirection;
-    vec3 lightColor;
-    vec2 metallicRoughnessValues;
-    vec3 cameraPosition;
-} state;
+    vec4 uDiffuseColor;
+};
 
-layout(set = 0, binding = 1) uniform textureCube textureEnvMapDiffuse;
-layout(set = 0, binding = 2) uniform sampler textureEnvMapDiffuseSampler;
-layout(set = 0, binding = 3) uniform textureCube textureEnvMapSpecular;
-layout(set = 0, binding = 4) uniform sampler textureEnvMapSpecularSampler;
-layout(set = 0, binding = 5) uniform textureCube textureEnvMapGloss;
-layout(set = 0, binding = 6) uniform sampler textureEnvMapGlossSampler;
-layout(set = 0, binding = 7) uniform texture2D textureBRDF;
-layout(set = 0, binding = 8) uniform sampler textureBRDFSampler;
-layout(set = 0, binding = 9) uniform texture2D textureDiffuse;
-layout(set = 0, binding = 10) uniform sampler textureDiffuseSampler;
-layout(set = 0, binding = 11) uniform texture2D textureBumpmap;
-layout(set = 0, binding = 12) uniform sampler textureBumpmapSampler;
-layout(set = 0, binding = 13) uniform texture2D textureEffect;
-layout(set = 0, binding = 14) uniform sampler textureEffectSampler;
+layout(set = 1, binding = 1) uniform UseTextureDiffuse
+{
+    int uUseTextureDiffuse;
+};
+
+layout(set = 1, binding = 2) uniform UseTextureBumpmap
+{
+    int uUseTextureBumpmap;
+};
+
+layout(set = 1, binding = 3) uniform UseTextureEffect
+{
+    int uUseTextureEffect;
+};
+
+layout(set = 1, binding = 4) uniform Effect
+{
+    vec4 uEffect;
+};
+
+layout(set = 1, binding = 5) uniform LightDirection
+{
+    vec3 uLightDirection;
+};
+
+layout(set = 1, binding = 6) uniform LightColor
+{
+    vec3 uLightColor;
+};
+
+layout(set = 1, binding = 7) uniform MetallicRoughnessValues
+{
+    vec2 uMetallicRoughnessValues;
+};
+
+layout(set = 1, binding = 8) uniform CameraPosition
+{
+    vec3 uCameraPosition;
+};
+
+layout(set = 1, binding = 9) uniform textureCube TextureEnvMapDiffuse;
+
+layout(set = 1, binding = 10) uniform textureCube TextureEnvMapSpecular;
+
+layout(set = 1, binding = 11) uniform textureCube TextureEnvMapGloss;
+
+layout(set = 1, binding = 12) uniform texture2D TextureBRDF;
+
+layout(set = 1, binding = 13) uniform texture2D TextureDiffuse;
+
+layout(set = 1, binding = 14) uniform texture2D TextureBumpmap;
+
+layout(set = 1, binding = 15) uniform texture2D TextureEffect;
+
+layout(set = 1, binding = 16) uniform sampler LinearSampler;
+
+layout(set = 1, binding = 17) uniform sampler PointSampler;
 
 layout(location = 0) in vec3 iPosition;
 layout(location = 1) in vec2 iTexCoord;
@@ -56,29 +91,29 @@ const float cMinRoughness = 0.04;
 
 vec3 getNormal()
 {
-    if (state.useTextureBumpmap == 0)
+    if (uUseTextureBumpmap == 0)
     {
         return normalize(iTBN[2].xyz);
     } 
     else 
     {
-        vec3 n = texture(sampler2D(textureBumpmap, textureBumpmapSampler), iTexCoord).rgb;
+        vec3 n = texture(sampler2D(TextureBumpmap, LinearSampler), iTexCoord).rgb;
         return normalize(iTBN * (2.0 * n - 1.0));
     }
 }
 
 vec3 getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection, bool gloss)
 {
-    vec3 brdf = texture(sampler2D(textureBRDF, textureBRDFSampler), vec2(pbrInputs.NdotV, 1.0 - pbrInputs.perceptualRoughness)).rgb;
-    vec3 diffuseLight = texture(samplerCube(textureEnvMapDiffuse, textureEnvMapDiffuseSampler), n).rgb;
+    vec3 brdf = texture(sampler2D(TextureBRDF, PointSampler), vec2(pbrInputs.NdotV, 1.0 - pbrInputs.perceptualRoughness)).rgb;
+    vec3 diffuseLight = texture(samplerCube(TextureEnvMapDiffuse, LinearSampler), n).rgb;
     vec3 specularLight;
     if (gloss == true)
     {
-        specularLight = texture(samplerCube(textureEnvMapGloss, textureEnvMapGlossSampler), reflection).rgb;
+        specularLight = texture(samplerCube(TextureEnvMapGloss, LinearSampler), reflection).rgb;
     }
     else
     {
-        specularLight = texture(samplerCube(textureEnvMapSpecular,textureEnvMapSpecularSampler), reflection).rgb;
+        specularLight = texture(samplerCube(TextureEnvMapSpecular, LinearSampler), reflection).rgb;
     }
     specularLight = mix(pbrInputs.diffuseColor, specularLight, pbrInputs.metalness);
     vec3 diffuse = diffuseLight * pbrInputs.diffuseColor;
@@ -115,13 +150,13 @@ float microfacetDistribution(PBRInfo pbrInputs)
 
 void main()
 {
-    float metalValue = state.metallicRoughnessValues.x;
-    float roughValue = state.metallicRoughnessValues.y;
+    float metalValue = uMetallicRoughnessValues.x;
+    float roughValue = uMetallicRoughnessValues.y;
     bool glossy = false;
 
-    if (state.useTextureEffect != 0)
+    if (uUseTextureEffect != 0)
     {
-        vec4 effectColor = texture(sampler2D(textureEffect, textureEffectSampler), iTexCoord);
+        vec4 effectColor = texture(sampler2D(TextureEffect, PointSampler), iTexCoord);
         if (effectColor.r >= 0.1)
         {
             metalValue = 1.0;
@@ -134,13 +169,13 @@ void main()
     float metallic = clamp(metalValue, 0.0, 1.0);
     float alphaRoughness = perceptualRoughness * perceptualRoughness;
 
-    vec4 baseColor = state.diffuseColor;
-    if (state.useTextureDiffuse != 0)
+    vec4 baseColor = uDiffuseColor;
+    if (uUseTextureDiffuse != 0)
     {
-        baseColor = texture(sampler2D(textureDiffuse, textureDiffuseSampler), iTexCoord);
+        baseColor = texture(sampler2D(TextureDiffuse, LinearSampler), iTexCoord);
     }
 
-    if (int(state.effect.x) == 1) 
+    if (int(uEffect.x) == 1) 
     {
         vec3 lumCoeff = vec3(0.25, 0.65, 0.1);
         float lum = dot(lumCoeff, baseColor.rgb);
@@ -151,11 +186,11 @@ void main()
         baseColor = vec4((vec3(1.0) + mix(result1, result2, L)) / 2.0, baseColor.a);
     }
 
-    if (int(state.effect.x) == 2) 
+    if (int(uEffect.x) == 2) 
     {
-        float minY = state.effect.z;
-        float maxY = state.effect.w;
-        float effectValue = ((1.0 - ((iVertexPosition.y - minY) / (maxY - minY))) - 2.0) + (state.effect.y * 4.0);
+        float minY = uEffect.z;
+        float maxY = uEffect.w;
+        float effectValue = ((1.0 - ((iVertexPosition.y - minY) / (maxY - minY))) - 2.0) + (uEffect.y * 4.0);
         baseColor = mix(vec4(0.0, 0.0, 0.0, 1.0), baseColor, max(0.0, min(1.0, effectValue)));
     }
 
@@ -166,8 +201,8 @@ void main()
     vec3 specularEnvironmentR0 = specularColor.rgb;
     vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
     vec3 n = getNormal();
-    vec3 v = normalize(state.cameraPosition - iPosition);
-    vec3 l = normalize(state.lightDirection);
+    vec3 v = normalize(uCameraPosition - iPosition);
+    vec3 l = normalize(uLightDirection);
     vec3 h = normalize(l+v);
     vec3 reflection = -normalize(reflect(v, n));
     float NdotL = clamp(dot(n, l), 0.001, 1.0);
@@ -183,7 +218,7 @@ void main()
     float D = microfacetDistribution(pbrInputs);
     vec3 diffuseContrib = (1.0 - F) * diffuse(pbrInputs);
     vec3 specContrib = F * G * D / (4.0 * NdotL * NdotV);
-    vec3 color = NdotL * state.lightColor * (diffuseContrib + specContrib);
+    vec3 color = NdotL * uLightColor * (diffuseContrib + specContrib);
     color += getIBLContribution(pbrInputs, n, reflection, glossy);
 
     oFragColor = vec4(color, baseColor.a);

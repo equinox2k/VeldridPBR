@@ -1,12 +1,24 @@
 #version 450
 
-layout(set = 0, binding = 0) uniform State
+layout(set = 0, binding = 0) uniform ModelMatrix
 {
-    mat4 modelMatrix;
-    mat4 viewMatrix;
-    mat4 projectionMatrix;
-    mat3 normalMatrix;
-} state;
+    mat4 uModelMatrix;
+};
+
+layout(set = 0, binding = 1) uniform ViewMatrix
+{
+    mat4 uViewMatrix;
+};
+
+layout(set = 0, binding = 2) uniform ProjectionMatrix
+{
+    mat4 uProjectionMatrix;
+};
+
+layout(set = 0, binding = 3) uniform NormalMatrix
+{
+    mat3 uNormalMatrix;
+};
 
 layout(location = 0) in vec3 iPosition;
 layout(location = 1) in vec3 iNormal;
@@ -15,6 +27,6 @@ layout(location = 0) out vec3 oNormal;
 
 void main() 
 {
-    oNormal = normalize(state.normalMatrix * iNormal);
-    gl_Position = state.projectionMatrix * state.viewMatrix * state.modelMatrix * vec4(iPosition, 1.0);
+    oNormal = normalize(uNormalMatrix * iNormal);
+    gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(iPosition, 1.0);
 }

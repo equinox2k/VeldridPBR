@@ -3,19 +3,38 @@
 #define KERNEL_RADIUS 8
 #define EPSILON 1e-6
 
-layout(set = 0, binding = 0) uniform State
+layout(set = 1, binding = 0) uniform CameraNear
 {
-    float cameraNear;
-    float cameraFar;
-    float depthCutOff;
-    vec2 sampleUvOffsets[KERNEL_RADIUS + 1];
-    float sampleWeights[KERNEL_RADIUS + 1];
-} state;
+    float uCameraNear;
+};
 
-layout(set = 0, binding = 1) uniform texture2D textureDiffuse;
-layout(set = 0, binding = 2) uniform sampler textureDiffuseSampler;
-layout(set = 0, binding = 3) uniform texture2D textureDepthNormal;
-layout(set = 0, binding = 4) uniform sampler textureDepthNormalSampler;
+layout(set = 1, binding = 1) uniform CameraFar
+{
+    float uCameraFar;
+};
+
+layout(set = 1, binding = 2) uniform DepthCutOff
+{
+    float uDepthCutOff;
+};
+
+layout(set = 1, binding = 3) uniform SampleUvOffsets
+{
+    vec2 uSampleUvOffsets[KERNEL_RADIUS + 1];
+};
+
+layout(set = 1, binding = 4) uniform SampleWeights
+{
+    float uSampleWeights[KERNEL_RADIUS + 1];
+};
+
+layout(set = 1, binding = 5) uniform texture2D TextureDiffuse;
+
+layout(set = 1, binding = 6) uniform texture2D TextureDepthNormal;
+
+layout(set = 1, binding = 7) uniform sampler LinearSampler;
+
+layout(set = 1, binding = 8) uniform sampler PointSampler;
 
 layout(location = 0) in vec2 iTexCoord;
 layout(location = 1) in vec2 iInvSize;
@@ -44,7 +63,7 @@ vec3 DecodeViewNormalStereo(vec4 enc4)
 }
 
 float getDepth(const in vec2 screenPosition) {
-    vec4 textureColor = texture(sampler2D(textureDepthNormal, textureDepthNormalSampler), screenPosition);
+    vec4 textureColor = texture(sampler2D(TextureDepthNormal, PointSampler), screenPosition);
     return DecodeFloatRG(textureColor.zw);
 }
 
@@ -53,7 +72,7 @@ float perspectiveDepthToViewZ(const in float invClipZ, const in float near, cons
 }
 
 float getViewZ(const in float depth) {
-    return perspectiveDepthToViewZ(depth, state.cameraNear, state.cameraFar);
+    return perspectiveDepthToViewZ(depth, uCameraNear, uCameraFar);
 }
 
 void main() 
@@ -65,23 +84,23 @@ void main()
 
     float centerViewZ = -getViewZ(depth);
     bool rBreak = false, lBreak = false;
-    float weightSum = state.sampleWeights[0];
-    vec4 diffuseSum = texture(sampler2D(textureDiffuse, textureDiffuseSampler), iTexCoord) * weightSum;
+    float weightSum = uSampleWeights[0];
+    vec4 diffuseSum = texture(sampler2D(TextureDiffuse, LinearSampler), iTexCoord) * weightSum;
     for( int i = 1; i <= KERNEL_RADIUS; i ++ ) {
-        float sampleWeight = state.sampleWeights[i];
-        vec2 sampleUvOffset = state.sampleUvOffsets[i] * iInvSize;
+        float sampleWeight = uSampleWeights[i];
+        vec2 sampleUvOffset = uSampleUvOffsets[i] * iInvSize;
         vec2 sampleUv = iTexCoord + sampleUvOffset;
         float viewZ = -getViewZ(getDepth(sampleUv));
-        if(abs(viewZ - centerViewZ) > state.depthCutOff) rBreak = true;
+        if(abs(viewZ - centerViewZ) > uDepthCutOff) rBreak = true;
         if(!rBreak) {
-            diffuseSum += texture(sampler2D(textureDiffuse, textureDiffuseSampler), sampleUv) * sampleWeight;
+            diffuseSum += texture(sampler2D(TextureDiffuse, LinearSampler), sampleUv) * sampleWeight;
             weightSum += sampleWeight;
         }
         sampleUv = iTexCoord - sampleUvOffset;
         viewZ = -getViewZ( getDepth(sampleUv));
-        if (abs(viewZ - centerViewZ) > state.depthCutOff) lBreak = true;
+        if (abs(viewZ - centerViewZ) > uDepthCutOff) lBreak = true;
         if (!lBreak) {
-            diffuseSum += texture(sampler2D(textureDiffuse, textureDiffuseSampler), sampleUv) * sampleWeight;
+            diffuseSum += texture(sampler2D(TextureDiffuse, LinearSampler), sampleUv) * sampleWeight;
             weightSum += sampleWeight;
         }
 

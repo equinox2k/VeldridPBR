@@ -1,11 +1,19 @@
 #version 450
 
-layout(set = 0, binding = 0) uniform State
+layout(set = 0, binding = 0) uniform ModelMatrix
 {
-    mat4 modelMatrix;
-    mat4 viewMatrix;
-    mat4 projectionMatrix;
-} state;
+    mat4 uModelMatrix;
+};
+
+layout(set = 0, binding = 1) uniform ViewMatrix
+{
+    mat4 uViewMatrix;
+};
+
+layout(set = 0, binding = 2) uniform ProjectionMatrix
+{
+    mat4 uProjectionMatrix;
+};
 
 layout(location = 0) in vec3 iPosition;
 layout(location = 1) in vec2 iTexCoord;
@@ -20,14 +28,14 @@ layout(location = 6) out vec3 oVertexPosition;
 
 void main()
 {
-    vec4 position = state.modelMatrix * vec4(iPosition, 1.0);
+    vec4 position = uModelMatrix * vec4(iPosition, 1.0);
     oPosition = vec3(position.xyz) / vec3(position.w);
     oTexCoord = vec2(iTexCoord.x, 1.0 - iTexCoord.y);
-    vec3 normalW = normalize(vec3((state.modelMatrix * vec4(iNormal, 0.0)).xyz));
-    vec3 tangentW = normalize(vec3((state.modelMatrix * vec4(iTangent, 0.0)).xyz));
+    vec3 normalW = normalize(vec3((uModelMatrix * vec4(iNormal, 0.0)).xyz));
+    vec3 tangentW = normalize(vec3((uModelMatrix * vec4(iTangent, 0.0)).xyz));
     vec3 bitangentW = cross(normalW, tangentW);
     oTBN = mat3(vec3(tangentW), vec3(bitangentW), vec3(normalW));
     oNormal = normalW;
     oVertexPosition = iPosition;
-    gl_Position = (state.projectionMatrix * state.viewMatrix) * position;
+    gl_Position = (uProjectionMatrix * uViewMatrix) * position;
 }
