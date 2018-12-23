@@ -17,6 +17,7 @@ namespace VeldridNSViewExample
         private uint _width;
         private uint _height;
         private bool _disposed;
+        private bool _initialized;
 
         public GraphicsDevice GraphicsDevice { get; protected set; }
         public Swapchain MainSwapchain { get; protected set; }
@@ -36,9 +37,9 @@ namespace VeldridNSViewExample
             _deviceOptions = deviceOptions;
         }
 
-        public uint Width => _width;
+        public uint Width => _width < 1 ? 1 : _width;
 
-        public uint Height => _height;
+        public uint Height => _height < 1 ? 1 : _height;
 
         protected override void Dispose(bool disposing)
         {
@@ -55,36 +56,37 @@ namespace VeldridNSViewExample
             base.Dispose(disposing);
         }
 
-        public override void ViewDidMoveToWindow()
-        {
-            base.ViewDidMoveToWindow();
-
-            var swapchainSource = SwapchainSource.CreateNSView(Handle);
-            var swapchainDescription = new SwapchainDescription(swapchainSource, (uint)Frame.Width, (uint)Frame.Height, null, true, true);
-
-            if (_backend == GraphicsBackend.Metal)
-            {
-                GraphicsDevice = GraphicsDevice.CreateMetal(_deviceOptions);
-            }
-
-            MainSwapchain = GraphicsDevice.ResourceFactory.CreateSwapchain(swapchainDescription);
-
-            DeviceReady?.Invoke();
-
-            _displayLink = new CVDisplayLink();
-            _displayLink.SetOutputCallback(HandleDisplayLinkOutputCallback);
-            _displayLink.Start();
-        }
-
         public override void Layout()
         {
             base.Layout();
 
-            _resized = true;
-
             const double dpiScale = 1;
             _width = (uint)(Frame.Width < 0 ? 0 : Math.Ceiling(Frame.Width * dpiScale));
             _height = (uint)(Frame.Height < 0 ? 0 : Math.Ceiling(Frame.Height * dpiScale));
+
+            _resized = true;
+
+            if (!_initialized)
+            {
+                _initialized = true;
+
+                var swapchainSource = SwapchainSource.CreateNSView(Handle);
+                var swapchainDescription = new SwapchainDescription(swapchainSource, Width, Height, _deviceOptions.SwapchainDepthFormat, true, true);
+
+                if (_backend == GraphicsBackend.Metal)
+                {
+            
+                    GraphicsDevice = GraphicsDevice.CreateMetal(_deviceOptions);
+                }
+
+                MainSwapchain = GraphicsDevice.ResourceFactory.CreateSwapchain(swapchainDescription);
+
+                DeviceReady?.Invoke();
+
+                _displayLink = new CVDisplayLink();
+                _displayLink.SetOutputCallback(HandleDisplayLinkOutputCallback);
+                _displayLink.Start();
+            }
         }
 
         private CVReturn HandleDisplayLinkOutputCallback(CVDisplayLink displayLink, ref CVTimeStamp inNow, ref CVTimeStamp inOutputTime, CVOptionFlags flagsIn, ref CVOptionFlags flagsOut)
@@ -100,7 +102,7 @@ namespace VeldridNSViewExample
                     if (_resized)
                     {
                         _resized = false;
-                        MainSwapchain.Resize(_width, _height);
+                        MainSwapchain.Resize(Width, Height);
                         Resized?.Invoke();
                     }
                     Rendering?.Invoke();

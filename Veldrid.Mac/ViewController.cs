@@ -116,7 +116,6 @@ namespace VeldridNSViewExample
             base.ViewDidLoad();
 
             var graphicsDeviceOptions = new GraphicsDeviceOptions(false, PixelFormat.R16_UNorm, false, ResourceBindingModel.Improved, true, true);
-
             _veldridView = new VeldridView(GraphicsBackend.Metal, graphicsDeviceOptions)
             {
                 TranslatesAutoresizingMaskIntoConstraints = false
@@ -285,16 +284,15 @@ namespace VeldridNSViewExample
 
             _commandList.SetFramebuffer(_veldridView.MainSwapchain.Framebuffer);
             _commandList.ClearColorTarget(0, _clearColors[_frameIndex / _frameRepeatCount]);
-            
-         //   _commandList.ClearDepthStencil(1f);
+            _commandList.ClearDepthStencil(1f);
             _commandList.SetPipeline(_pipeline);
             _commandList.SetVertexBuffer(0, _vertexBuffer);
             _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt16);
             _commandList.SetGraphicsResourceSet(0, _outputVertSet);
             _commandList.SetGraphicsResourceSet(1, _outputFragSet);
             _commandList.DrawIndexed(36, 1, 0, 0, 0);
-
             _commandList.End();
+
             _veldridView.GraphicsDevice.SubmitCommands(_commandList);
             _veldridView.GraphicsDevice.SwapBuffers(_veldridView.MainSwapchain);
 
