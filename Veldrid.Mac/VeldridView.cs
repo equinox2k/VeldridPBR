@@ -36,6 +36,10 @@ namespace VeldridNSViewExample
             _deviceOptions = deviceOptions;
         }
 
+        public uint Width => _width;
+
+        public uint Height => _height;
+
         protected override void Dispose(bool disposing)
         {
             if (_disposed)

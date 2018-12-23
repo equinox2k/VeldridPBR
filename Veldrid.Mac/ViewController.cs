@@ -90,6 +90,7 @@ namespace VeldridNSViewExample
         private DeviceBuffer _indexBuffer;
 
         private Pipeline _pipeline;
+        private float _ticks;
 
         private int _frameIndex = 0;
         private RgbaFloat[] _clearColors =
@@ -106,7 +107,6 @@ namespace VeldridNSViewExample
 
         public ViewController(IntPtr handle) : base(handle)
         {
-           // _stoneTexData = LoadEmbeddedAsset<ProcessedTexture>("spnza_bricks_a_diff.binary");
             _vertices = GetCubeVertices();
             _indices = GetCubeIndices();
         }
@@ -115,7 +115,7 @@ namespace VeldridNSViewExample
         {
             base.ViewDidLoad();
 
-            var graphicsDeviceOptions = new GraphicsDeviceOptions(false, null, false, ResourceBindingModel.Improved, true, true);
+            var graphicsDeviceOptions = new GraphicsDeviceOptions(false, PixelFormat.R16_UNorm, false, ResourceBindingModel.Improved, true, true);
 
             _veldridView = new VeldridView(GraphicsBackend.Metal, graphicsDeviceOptions)
             {
@@ -184,15 +184,10 @@ namespace VeldridNSViewExample
             _linearSampler = _veldridView.GraphicsDevice.Aniso4xSampler;
             _pointSampler = _veldridView.GraphicsDevice.Aniso4xSampler;
 
-            _vertexBuffer = resourceFactory.CreateBuffer(new BufferDescription((uint)(VertexPositionTexture.SizeInBytes * _vertices.Length), BufferUsage.VertexBuffer));
+            _vertexBuffer = resourceFactory.CreateBuffer(new BufferDescription((uint)(Vertex.SizeInBytes * _vertices.Length), BufferUsage.VertexBuffer));
             _veldridView.GraphicsDevice.UpdateBuffer(_vertexBuffer, 0, _vertices);
             _indexBuffer = resourceFactory.CreateBuffer(new BufferDescription(sizeof(ushort) * (uint)_indices.Length, BufferUsage.IndexBuffer));
             _veldridView.GraphicsDevice.UpdateBuffer(_indexBuffer, 0, _indices);
-
-    //        _surfaceTexture = _stoneTexData.CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory, TextureUsage.Sampled);
-     //       _surfaceTextureView = resourceFactory.CreateTextureView(_surfaceTexture);
-
-
 
             var modelShaders = resourceFactory.CreateFromSpirv(LoadShader(resourceFactory, "Model", ShaderStages.Vertex, "main"), LoadShader(resourceFactory, "Model", ShaderStages.Fragment, "main"));
 
@@ -234,7 +229,7 @@ namespace VeldridNSViewExample
             _pipeline = resourceFactory.CreateGraphicsPipeline(new GraphicsPipelineDescription(
                 BlendStateDescription.SingleOverrideBlend,
                 DepthStencilStateDescription.DepthOnlyLessEqual,
-                RasterizerStateDescription.Default,
+                new RasterizerStateDescription(FaceCullMode.Back, PolygonFillMode.Solid, FrontFace.CounterClockwise, true, false),
                 PrimitiveTopology.TriangleList,
                 shaderSet,
                 new[] { outputVertLayout, outputFragLayout },
@@ -279,17 +274,26 @@ namespace VeldridNSViewExample
 
         void VeldridView_Rendering()
         {
-            _commandList.Begin();
+            _ticks += 10f;
 
-    //        _commandList.UpdateBuffer()
-    //        _commandList.UpdateBuffer(_projectionBuffer, 0, Matrix4x4.CreatePerspectiveFieldOfView(
-    //1.0f,
-    //(float)Window.Width / Window.Height,
-    //0.5f,
-    //100f));
+            Matrix4x4 rotation = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, (_ticks / 1000f)) * Matrix4x4.CreateFromAxisAngle(Vector3.UnitX, (_ticks / 3000f));
+
+            _commandList.Begin();
+            _commandList.UpdateBuffer(_modelMatrixBuffer, 0, ref rotation);
+            _commandList.UpdateBuffer(_viewMatrixBuffer, 0, Matrix4x4.CreateLookAt(Vector3.UnitZ * 2.5f, Vector3.Zero, Vector3.UnitY));
+            _commandList.UpdateBuffer(_projectionMatrixBuffer, 0, Matrix4x4.CreatePerspectiveFieldOfView(1.0f, (float)_veldridView.Width / (float)_veldridView.Height, 0.5f, 100f));
 
             _commandList.SetFramebuffer(_veldridView.MainSwapchain.Framebuffer);
             _commandList.ClearColorTarget(0, _clearColors[_frameIndex / _frameRepeatCount]);
+            
+         //   _commandList.ClearDepthStencil(1f);
+            _commandList.SetPipeline(_pipeline);
+            _commandList.SetVertexBuffer(0, _vertexBuffer);
+            _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt16);
+            _commandList.SetGraphicsResourceSet(0, _outputVertSet);
+            _commandList.SetGraphicsResourceSet(1, _outputFragSet);
+            _commandList.DrawIndexed(36, 1, 0, 0, 0);
+
             _commandList.End();
             _veldridView.GraphicsDevice.SubmitCommands(_commandList);
             _veldridView.GraphicsDevice.SwapBuffers(_veldridView.MainSwapchain);
