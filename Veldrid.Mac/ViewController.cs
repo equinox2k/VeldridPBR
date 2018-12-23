@@ -5,6 +5,8 @@ using Veldrid;
 using Veldrid.Mac;
 using Veldrid.SPIRV;
 using System.Numerics;
+using Veldrid.ImageSharp;
+using SixLabors.ImageSharp;
 
 namespace VeldridNSViewExample
 {
@@ -119,8 +121,19 @@ namespace VeldridNSViewExample
 
         public ShaderDescription LoadShader(ResourceFactory factory, string set, ShaderStages stage, string entryPoint)
         {
-            string name = $"{set}.{stage.ToString().Substring(0, 4).ToLower()}.spv";
+            string name = $"VeldridNSViewExample.Shaders.{set}.{stage.ToString().Substring(0, 4).ToLower()}.spv";
             return new ShaderDescription(stage, ResourceLoader.GetEmbeddedResourceBytes(name), entryPoint);
+        }
+
+        private ImageSharpCubemapTexture LoadCube(string name)
+        {
+            var posX = Image.Load(ResourceLoader.GetEmbeddedResourceStream($"VeldridNSViewExample.ThreeDee.{name}_posx.jpg"));
+            var negX = Image.Load(ResourceLoader.GetEmbeddedResourceStream($"VeldridNSViewExample.ThreeDee.{name}_negx.jpg"));
+            var posY = Image.Load(ResourceLoader.GetEmbeddedResourceStream($"VeldridNSViewExample.ThreeDee.{name}_posy.jpg"));
+            var negY = Image.Load(ResourceLoader.GetEmbeddedResourceStream($"VeldridNSViewExample.ThreeDee.{name}_negY.jpg"));
+            var posZ = Image.Load(ResourceLoader.GetEmbeddedResourceStream($"VeldridNSViewExample.ThreeDee.{name}_posZ.jpg"));
+            var negZ = Image.Load(ResourceLoader.GetEmbeddedResourceStream($"VeldridNSViewExample.ThreeDee.{name}_negZ.jpg"));
+            return new ImageSharpCubemapTexture(posX, negX, posY, negY, posZ, negZ);
         }
 
         private void CreateResources(ResourceFactory resourceFactory)
@@ -140,19 +153,20 @@ namespace VeldridNSViewExample
             _lightColor = resourceFactory.CreateBuffer(new BufferDescription(32, BufferUsage.UniformBuffer));
             _metallicRoughnessValues = resourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _cameraPosition = resourceFactory.CreateBuffer(new BufferDescription(32, BufferUsage.UniformBuffer));
-            _textureEnvMapDiffuse = null;
+
+            _textureEnvMapDiffuse = LoadCube("irradiance").CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory);
             _textureEnvMapDiffuseView = resourceFactory.CreateTextureView(_textureEnvMapDiffuse);
-            _textureEnvMapSpecular = null;
+            _textureEnvMapSpecular = LoadCube("radiance").CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory);
             _textureEnvMapSpecularView = resourceFactory.CreateTextureView(_textureEnvMapSpecular);
-            _textureEnvMapGloss = null;
+            _textureEnvMapGloss = LoadCube("gloss").CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory);
             _textureEnvMapGlossView = resourceFactory.CreateTextureView(_textureEnvMapGloss);
-            _textureBRDF = null;
+            _textureBRDF = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.brdf.png")).CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory); ;
             _textureBRDFView = resourceFactory.CreateTextureView(_textureBRDF);
-            _textureDiffuse = null;
+            _textureDiffuse = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.brdf.png")).CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory); ;
             _textureDiffuseView = resourceFactory.CreateTextureView(_textureDiffuse);
-            _textureBumpmap = null;
+            _textureBumpmap = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.brdf.png")).CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory); ;
             _textureBumpmapView = resourceFactory.CreateTextureView(_textureBumpmap);
-            _textureEffect = null;
+            _textureEffect = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.brdf.png")).CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory); ;
             _textureEffectView = resourceFactory.CreateTextureView(_textureEffect);
             _linearSampler = _veldridView.GraphicsDevice.Aniso4xSampler;
             _pointSampler = _veldridView.GraphicsDevice.Aniso4xSampler;

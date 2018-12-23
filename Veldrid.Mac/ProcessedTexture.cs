@@ -42,7 +42,7 @@ namespace VeldridNSViewExample
 
             Texture staging = rf.CreateTexture(new TextureDescription(
                 Width, Height, Depth, MipLevels, ArrayLayers, Format, TextureUsage.Staging, Type));
-
+            
             ulong offset = 0;
             fixed (byte* texDataPtr = &TextureData[0])
             {

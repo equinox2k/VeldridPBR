@@ -104,6 +104,18 @@
     </Reference>
     <Reference Include="System.Numerics.Vectors" />
     <Reference Include="System.Numerics" />
+    <Reference Include="System.Memory">
+      <HintPath>..\packages\System.Memory.4.5.1\lib\netstandard2.0\System.Memory.dll</HintPath>
+    </Reference>
+    <Reference Include="SixLabors.Core">
+      <HintPath>..\packages\SixLabors.Core.1.0.0-beta0006\lib\netstandard1.1\SixLabors.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="SixLabors.ImageSharp">
+      <HintPath>..\packages\SixLabors.ImageSharp.1.0.0-beta0005\lib\netstandard2.0\SixLabors.ImageSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Veldrid.ImageSharp">
+      <HintPath>..\packages\Veldrid.ImageSharp.4.5.0\lib\netstandard2.0\Veldrid.ImageSharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ImageAsset Include="Assets.xcassets\AppIcon.appiconset\Contents.json" />
@@ -170,6 +182,35 @@
       <Kind>Dynamic</Kind>
       <SmartLink>False</SmartLink>
     </NativeReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ThreeDee\brdf.png" />
+    <EmbeddedResource Include="ThreeDee\fullFloatEnvironmentBrdf.png" />
+    <EmbeddedResource Include="ThreeDee\gloss_negx.jpg" />
+    <EmbeddedResource Include="ThreeDee\gloss_negy.jpg" />
+    <EmbeddedResource Include="ThreeDee\gloss_negz.jpg" />
+    <EmbeddedResource Include="ThreeDee\gloss_posx.jpg" />
+    <EmbeddedResource Include="ThreeDee\gloss_posy.jpg" />
+    <EmbeddedResource Include="ThreeDee\gloss_posz.jpg" />
+    <EmbeddedResource Include="ThreeDee\ground.png" />
+    <EmbeddedResource Include="ThreeDee\irradiance_negx.jpg" />
+    <EmbeddedResource Include="ThreeDee\irradiance_negy.jpg" />
+    <EmbeddedResource Include="ThreeDee\irradiance_negz.jpg" />
+    <EmbeddedResource Include="ThreeDee\irradiance_posx.jpg" />
+    <EmbeddedResource Include="ThreeDee\irradiance_posy.jpg" />
+    <EmbeddedResource Include="ThreeDee\irradiance_posz.jpg" />
+    <EmbeddedResource Include="ThreeDee\radiance_negx.jpg" />
+    <EmbeddedResource Include="ThreeDee\radiance_negy.jpg" />
+    <EmbeddedResource Include="ThreeDee\radiance_negz.jpg" />
+    <EmbeddedResource Include="ThreeDee\radiance_posx.jpg" />
+    <EmbeddedResource Include="ThreeDee\radiance_posy.jpg" />
+    <EmbeddedResource Include="ThreeDee\radiance_posz.jpg" />
+    <EmbeddedResource Include="ThreeDee\skybox_negx.jpg" />
+    <EmbeddedResource Include="ThreeDee\skybox_negy.jpg" />
+    <EmbeddedResource Include="ThreeDee\skybox_negz.jpg" />
+    <EmbeddedResource Include="ThreeDee\skybox_posx.jpg" />
+    <EmbeddedResource Include="ThreeDee\skybox_posy.jpg" />
+    <EmbeddedResource Include="ThreeDee\skybox_posz.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
   <Import Project="..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" />
