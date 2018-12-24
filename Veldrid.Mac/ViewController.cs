@@ -174,14 +174,15 @@ namespace VeldridNSViewExample
             _textureEnvMapGlossView = resourceFactory.CreateTextureView(_textureEnvMapGloss);
             _textureBRDF = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.brdf.png")).CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory); ;
             _textureBRDFView = resourceFactory.CreateTextureView(_textureBRDF);
+
             _textureDiffuse = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.brdf.png")).CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory); ;
             _textureDiffuseView = resourceFactory.CreateTextureView(_textureDiffuse);
             _textureBumpmap = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.brdf.png")).CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory); ;
             _textureBumpmapView = resourceFactory.CreateTextureView(_textureBumpmap);
             _textureEffect = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.brdf.png")).CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory); ;
             _textureEffectView = resourceFactory.CreateTextureView(_textureEffect);
-            _linearSampler = _veldridView.GraphicsDevice.Aniso4xSampler;
-            _pointSampler = _veldridView.GraphicsDevice.Aniso4xSampler;
+            _linearSampler = _veldridView.GraphicsDevice.LinearSampler;
+            _pointSampler = _veldridView.GraphicsDevice.PointSampler;
 
             _vertexBuffer = resourceFactory.CreateBuffer(new BufferDescription((uint)(Vertex.SizeInBytes * _vertices.Length), BufferUsage.VertexBuffer));
             _veldridView.GraphicsDevice.UpdateBuffer(_vertexBuffer, 0, _vertices);
@@ -282,6 +283,16 @@ namespace VeldridNSViewExample
             _commandList.UpdateBuffer(_viewMatrixBuffer, 0, Matrix4x4.CreateLookAt(Vector3.UnitZ * 2.5f, Vector3.Zero, Vector3.UnitY));
             _commandList.UpdateBuffer(_projectionMatrixBuffer, 0, Matrix4x4.CreatePerspectiveFieldOfView(1.0f, (float)_veldridView.Width / (float)_veldridView.Height, 0.5f, 100f));
 
+            _commandList.UpdateBuffer(_diffuseColorBuffer, 0, new Vector4(1, 1, 1, 1));
+            _commandList.UpdateBuffer(_useTextureDiffuse, 0, 1);
+            _commandList.UpdateBuffer(_useTextureBumpmap, 0, 0);
+            _commandList.UpdateBuffer(_useTextureEffect, 0, 0);
+            _commandList.UpdateBuffer(_effect, 0, 0);
+            _commandList.UpdateBuffer(_lightDirection, 0, new Vector3(1, 1, 1));
+            _commandList.UpdateBuffer(_lightColor, 0, new Vector3(1, 1, 1));
+            _commandList.UpdateBuffer(_metallicRoughnessValues, 0, new Vector2(0.5f, 0.5f));
+            _commandList.UpdateBuffer(_cameraPosition, 0, new Vector4(0, 0, 2.5f, 0));
+
             _commandList.SetFramebuffer(_veldridView.MainSwapchain.Framebuffer);
             _commandList.ClearColorTarget(0, _clearColors[_frameIndex / _frameRepeatCount]);
             _commandList.ClearDepthStencil(1f);
@@ -298,8 +309,6 @@ namespace VeldridNSViewExample
 
             _frameIndex = (_frameIndex + 1) % (_clearColors.Length * _frameRepeatCount);
         }
-
-
 
         private static Vertex[] GetCubeVertices()
         {
