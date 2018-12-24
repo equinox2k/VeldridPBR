@@ -29,4 +29,5 @@ void main()
 {
     oNormal = normalize(uNormalMatrix * iNormal);
     gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * vec4(iPosition, 1.0);
+    gl_Position.y = -gl_Position.y;
 }

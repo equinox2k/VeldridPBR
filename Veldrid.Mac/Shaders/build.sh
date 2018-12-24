@@ -16,3 +16,7 @@ cd $DIR
 ./glslangvalidator -V -S frag DepthLimitedBlur.frag -o DepthLimitedBlur.frag.spv
 ./glslangvalidator -V -S vert DepthNormal.vert -o DepthNormal.vert.spv
 ./glslangvalidator -V -S frag DepthNormal.frag -o DepthNormal.frag.spv
+
+./spirv-cross --version 310 --es Model.vert.spv --output comp/Model.glsl-es.frag
+./spirv-cross --version 100 Model.vert.spv --output comp/Model.glsl.frag
+./spirv-cross --hlsl Model.vert.spv --output comp/Model.hlsl.frag

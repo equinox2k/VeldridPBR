@@ -16,4 +16,5 @@ void main()
     oTexCoord = iTexCoord;
     oInvSize = 1.0 / uSize;
     gl_Position =  vec4(iPosition, 1.0);
+    gl_Position.y = -gl_Position.y;
 }
