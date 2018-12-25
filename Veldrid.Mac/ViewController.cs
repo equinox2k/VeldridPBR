@@ -48,6 +48,8 @@ namespace VeldridNSViewExample
     [Register("ViewController")]
     public class ViewController : NSSplitViewController
     {
+        private ModelRender _modelRender;
+
         private VeldridView _veldridView;
         private CommandList _commandList;
 
@@ -57,39 +59,38 @@ namespace VeldridNSViewExample
         private DeviceBuffer _modelMatrixBuffer;
         private DeviceBuffer _viewMatrixBuffer;
         private DeviceBuffer _projectionMatrixBuffer;
-        private ResourceSet _outputFragSet;
+        //private ResourceSet _outputFragSet;
 
-        private DeviceBuffer _diffuseColorBuffer;
-        private DeviceBuffer _useTextureDiffuse;
-        private DeviceBuffer _useTextureBumpmap;
-        private DeviceBuffer _useTextureEffect;
-        private DeviceBuffer _effect;
-        private DeviceBuffer _lightDirection;
-        private DeviceBuffer _lightColor;
-        private DeviceBuffer _metallicRoughnessValues;
-        private DeviceBuffer _cameraPosition;
-        private Texture _textureEnvMapDiffuse;
-        private TextureView _textureEnvMapDiffuseView;
-        private Texture _textureEnvMapSpecular;
-        private TextureView _textureEnvMapSpecularView;
-        private Texture _textureEnvMapGloss;
-        private TextureView _textureEnvMapGlossView;
-        private Texture _textureBRDF;
-        private TextureView _textureBRDFView;
-        private Texture _textureDiffuse;
-        private TextureView _textureDiffuseView;
-        private Texture _textureBumpmap;
-        private TextureView _textureBumpmapView;
-        private Texture _textureEffect;
-        private TextureView _textureEffectView;
-        private Sampler _linearSampler;
-        private Sampler _pointSampler;
-        private ResourceSet _outputVertSet;
+        //private DeviceBuffer _diffuseColorBuffer;
+        //private DeviceBuffer _useTextureDiffuse;
+        //private DeviceBuffer _useTextureBumpmap;
+        //private DeviceBuffer _useTextureEffect;
+        //private DeviceBuffer _effect;
+        //private DeviceBuffer _lightDirection;
+        //private DeviceBuffer _lightColor;
+        //private DeviceBuffer _metallicRoughnessValues;
+        //private DeviceBuffer _cameraPosition;
+        //private Texture _textureEnvMapDiffuse;
+        //private TextureView _textureEnvMapDiffuseView;
+        //private Texture _textureEnvMapSpecular;
+        //private TextureView _textureEnvMapSpecularView;
+        //private Texture _textureEnvMapGloss;
+        //private TextureView _textureEnvMapGlossView;
+        //private Texture _textureBRDF;
+        //private TextureView _textureBRDFView;
+        //private Texture _textureDiffuse;
+        //private TextureView _textureDiffuseView;
+        //private Texture _textureBumpmap;
+        //private TextureView _textureBumpmapView;
+        //private Texture _textureEffect;
+        //private TextureView _textureEffectView;
+        //private Sampler _linearSampler;
+        //private Sampler _pointSampler;
+        //private ResourceSet _outputVertSet;
 
         private DeviceBuffer _vertexBuffer;
         private DeviceBuffer _indexBuffer;
 
-        private Pipeline _pipeline;
         private float _ticks;
 
         private int _frameIndex = 0;
@@ -156,40 +157,10 @@ namespace VeldridNSViewExample
             _viewMatrixBuffer = resourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
             _projectionMatrixBuffer = resourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
 
-            _diffuseColorBuffer = resourceFactory.CreateBuffer(new BufferDescription(32, BufferUsage.UniformBuffer));
-            _useTextureDiffuse = resourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
-            _useTextureBumpmap = resourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
-            _useTextureEffect = resourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
-            _effect = resourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
-            _lightDirection = resourceFactory.CreateBuffer(new BufferDescription(32, BufferUsage.UniformBuffer));
-            _lightColor = resourceFactory.CreateBuffer(new BufferDescription(32, BufferUsage.UniformBuffer));
-            _metallicRoughnessValues = resourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
-            _cameraPosition = resourceFactory.CreateBuffer(new BufferDescription(32, BufferUsage.UniformBuffer));
-
-            _textureEnvMapDiffuse = LoadCube("irradiance").CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory);
-            _textureEnvMapDiffuseView = resourceFactory.CreateTextureView(_textureEnvMapDiffuse);
-            _textureEnvMapSpecular = LoadCube("radiance").CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory);
-            _textureEnvMapSpecularView = resourceFactory.CreateTextureView(_textureEnvMapSpecular);
-            _textureEnvMapGloss = LoadCube("gloss").CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory);
-            _textureEnvMapGlossView = resourceFactory.CreateTextureView(_textureEnvMapGloss);
-            _textureBRDF = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.brdf.png")).CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory); ;
-            _textureBRDFView = resourceFactory.CreateTextureView(_textureBRDF);
-
-            _textureDiffuse = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.brdf.png")).CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory); ;
-            _textureDiffuseView = resourceFactory.CreateTextureView(_textureDiffuse);
-            _textureBumpmap = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.brdf.png")).CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory); ;
-            _textureBumpmapView = resourceFactory.CreateTextureView(_textureBumpmap);
-            _textureEffect = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.brdf.png")).CreateDeviceTexture(_veldridView.GraphicsDevice, resourceFactory); ;
-            _textureEffectView = resourceFactory.CreateTextureView(_textureEffect);
-            _linearSampler = _veldridView.GraphicsDevice.LinearSampler;
-            _pointSampler = _veldridView.GraphicsDevice.PointSampler;
-
             _vertexBuffer = resourceFactory.CreateBuffer(new BufferDescription((uint)(Vertex.SizeInBytes * _vertices.Length), BufferUsage.VertexBuffer));
             _veldridView.GraphicsDevice.UpdateBuffer(_vertexBuffer, 0, _vertices);
             _indexBuffer = resourceFactory.CreateBuffer(new BufferDescription(sizeof(ushort) * (uint)_indices.Length, BufferUsage.IndexBuffer));
             _veldridView.GraphicsDevice.UpdateBuffer(_indexBuffer, 0, _indices);
-
-            var modelShaders = resourceFactory.CreateFromSpirv(LoadShader(resourceFactory, "Model", ShaderStages.Vertex, "main"), LoadShader(resourceFactory, "Model", ShaderStages.Fragment, "main"));
 
             var vertexLayoutDescription = new VertexLayoutDescription(
                 new VertexElementDescription("Position", VertexElementSemantic.Position, VertexElementFormat.Float3),
@@ -197,70 +168,8 @@ namespace VeldridNSViewExample
                 new VertexElementDescription("Normal", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3),
                 new VertexElementDescription("Tangent", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3));
 
-            var shaderSet = new ShaderSetDescription(new[] { vertexLayoutDescription }, modelShaders);
-
-            ResourceLayout outputVertLayout = resourceFactory.CreateResourceLayout(
-                new ResourceLayoutDescription(
-                    new ResourceLayoutElementDescription("ModelMatrix", ResourceKind.UniformBuffer, ShaderStages.Vertex),
-                    new ResourceLayoutElementDescription("ViewMatrix", ResourceKind.UniformBuffer, ShaderStages.Vertex),
-                    new ResourceLayoutElementDescription("ProjectionMatrix", ResourceKind.UniformBuffer, ShaderStages.Vertex)));
-
-            ResourceLayout outputFragLayout = resourceFactory.CreateResourceLayout(
-                new ResourceLayoutDescription(
-                    new ResourceLayoutElementDescription("DiffuseColor", ResourceKind.UniformBuffer, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("UseTextureDiffuse", ResourceKind.UniformBuffer, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("UseTextureBumpmap", ResourceKind.UniformBuffer, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("UseTextureEffect", ResourceKind.UniformBuffer, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("Effect", ResourceKind.UniformBuffer, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("LightDirection", ResourceKind.UniformBuffer, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("LightColor", ResourceKind.UniformBuffer, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("MetallicRoughnessValues", ResourceKind.UniformBuffer, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("CameraPosition", ResourceKind.UniformBuffer, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("TextureEnvMapDiffuse", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("TextureEnvMapSpecular", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("TextureEnvMapGloss", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("TextureBRDF", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("TextureDiffuse", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("TextureBumpmap", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("TextureEffect", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("LinearSampler", ResourceKind.Sampler, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("PointSampler", ResourceKind.Sampler, ShaderStages.Fragment)));
-                    
-            _pipeline = resourceFactory.CreateGraphicsPipeline(new GraphicsPipelineDescription(
-                BlendStateDescription.SingleOverrideBlend,
-                DepthStencilStateDescription.DepthOnlyLessEqual,
-                new RasterizerStateDescription(FaceCullMode.Back, PolygonFillMode.Solid, FrontFace.CounterClockwise, true, false),
-                PrimitiveTopology.TriangleList,
-                shaderSet,
-                new[] { outputVertLayout, outputFragLayout },
-                _veldridView.MainSwapchain.Framebuffer.OutputDescription));
-
-            _outputVertSet = resourceFactory.CreateResourceSet(new ResourceSetDescription(
-                outputVertLayout,
-                _modelMatrixBuffer,
-                _viewMatrixBuffer,
-                _projectionMatrixBuffer));
-
-            _outputFragSet = resourceFactory.CreateResourceSet(new ResourceSetDescription(
-                outputFragLayout,
-                _diffuseColorBuffer,
-                _useTextureDiffuse,
-                _useTextureBumpmap,
-                _useTextureEffect,
-                _effect,
-                _lightDirection,
-                _lightColor,
-                _metallicRoughnessValues,
-                _cameraPosition,
-                _textureEnvMapDiffuseView,
-                _textureEnvMapSpecularView,
-                _textureEnvMapGlossView,
-                _textureBRDFView,
-                _textureDiffuseView,
-                _textureBumpmapView,
-                _textureEffectView,
-                _linearSampler,
-                _pointSampler));
+            _modelRender = new ModelRender(_veldridView.GraphicsDevice, resourceFactory, vertexLayoutDescription, _veldridView.MainSwapchain.Framebuffer, _modelMatrixBuffer, _viewMatrixBuffer, _projectionMatrixBuffer);
+           
         }
 
         void VeldridView_DeviceReady()
@@ -283,25 +192,8 @@ namespace VeldridNSViewExample
             _commandList.UpdateBuffer(_viewMatrixBuffer, 0, Matrix4x4.CreateLookAt(Vector3.UnitZ * 2.5f, Vector3.Zero, Vector3.UnitY));
             _commandList.UpdateBuffer(_projectionMatrixBuffer, 0, Matrix4x4.CreatePerspectiveFieldOfView(1.0f, (float)_veldridView.Width / (float)_veldridView.Height, 0.5f, 100f));
 
-            _commandList.UpdateBuffer(_diffuseColorBuffer, 0, new Vector4(1, 1, 1, 1));
-            _commandList.UpdateBuffer(_useTextureDiffuse, 0, 1);
-            _commandList.UpdateBuffer(_useTextureBumpmap, 0, 0);
-            _commandList.UpdateBuffer(_useTextureEffect, 0, 0);
-            _commandList.UpdateBuffer(_effect, 0, 0);
-            _commandList.UpdateBuffer(_lightDirection, 0, new Vector3(1, 1, 1));
-            _commandList.UpdateBuffer(_lightColor, 0, new Vector3(1, 1, 1));
-            _commandList.UpdateBuffer(_metallicRoughnessValues, 0, new Vector2(0.5f, 0.5f));
-            _commandList.UpdateBuffer(_cameraPosition, 0, new Vector4(0, 0, 2.5f, 0));
+            _modelRender.Update(_commandList, _vertexBuffer, _indexBuffer);
 
-            _commandList.SetFramebuffer(_veldridView.MainSwapchain.Framebuffer);
-            _commandList.ClearColorTarget(0, _clearColors[_frameIndex / _frameRepeatCount]);
-            _commandList.ClearDepthStencil(1f);
-            _commandList.SetPipeline(_pipeline);
-            _commandList.SetVertexBuffer(0, _vertexBuffer);
-            _commandList.SetIndexBuffer(_indexBuffer, IndexFormat.UInt16);
-            _commandList.SetGraphicsResourceSet(0, _outputVertSet);
-            _commandList.SetGraphicsResourceSet(1, _outputFragSet);
-            _commandList.DrawIndexed(36, 1, 0, 0, 0);
             _commandList.End();
 
             _veldridView.GraphicsDevice.SubmitCommands(_commandList);

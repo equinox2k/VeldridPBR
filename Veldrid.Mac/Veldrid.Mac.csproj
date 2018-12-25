@@ -159,6 +159,8 @@
     <Compile Include="VeldridView.cs" />
     <Compile Include="ResourceLoader.cs" />
     <Compile Include="ProcessedTexture.cs" />
+    <Compile Include="ModelRender.cs" />
+    <Compile Include="BaseRender.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Main.storyboard" />
