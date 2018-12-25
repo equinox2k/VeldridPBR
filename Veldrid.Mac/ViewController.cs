@@ -49,7 +49,6 @@ namespace VeldridNSViewExample
     public class ViewController : NSSplitViewController
     {
         private ModelRender _modelRender;
-
         private VeldridView _veldridView;
         private CommandList _commandList;
 
@@ -59,52 +58,9 @@ namespace VeldridNSViewExample
         private DeviceBuffer _modelMatrixBuffer;
         private DeviceBuffer _viewMatrixBuffer;
         private DeviceBuffer _projectionMatrixBuffer;
-        //private ResourceSet _outputFragSet;
-
-        //private DeviceBuffer _diffuseColorBuffer;
-        //private DeviceBuffer _useTextureDiffuse;
-        //private DeviceBuffer _useTextureBumpmap;
-        //private DeviceBuffer _useTextureEffect;
-        //private DeviceBuffer _effect;
-        //private DeviceBuffer _lightDirection;
-        //private DeviceBuffer _lightColor;
-        //private DeviceBuffer _metallicRoughnessValues;
-        //private DeviceBuffer _cameraPosition;
-        //private Texture _textureEnvMapDiffuse;
-        //private TextureView _textureEnvMapDiffuseView;
-        //private Texture _textureEnvMapSpecular;
-        //private TextureView _textureEnvMapSpecularView;
-        //private Texture _textureEnvMapGloss;
-        //private TextureView _textureEnvMapGlossView;
-        //private Texture _textureBRDF;
-        //private TextureView _textureBRDFView;
-        //private Texture _textureDiffuse;
-        //private TextureView _textureDiffuseView;
-        //private Texture _textureBumpmap;
-        //private TextureView _textureBumpmapView;
-        //private Texture _textureEffect;
-        //private TextureView _textureEffectView;
-        //private Sampler _linearSampler;
-        //private Sampler _pointSampler;
-        //private ResourceSet _outputVertSet;
-
         private DeviceBuffer _vertexBuffer;
         private DeviceBuffer _indexBuffer;
-
-        private float _ticks;
-
-        private int _frameIndex = 0;
-        private RgbaFloat[] _clearColors =
-        {
-            RgbaFloat.Red,
-            RgbaFloat.Orange,
-            RgbaFloat.Yellow,
-            RgbaFloat.Green,
-            RgbaFloat.Blue,
-            new RgbaFloat(0.8f, 0.1f, 0.3f, 1f),
-            new RgbaFloat(0.8f, 0.1f, 0.9f, 1f),
-        };
-        private readonly int _frameRepeatCount = 20;
+        private DateTime _prevUpdateTime;
 
         public ViewController(IntPtr handle) : base(handle)
         {
@@ -130,23 +86,6 @@ namespace VeldridNSViewExample
             _veldridView.DeviceReady += VeldridView_DeviceReady;
             _veldridView.Resized += VeldridView_Resized;
             _veldridView.Rendering += VeldridView_Rendering;
-        }
-
-        public ShaderDescription LoadShader(ResourceFactory factory, string set, ShaderStages stage, string entryPoint)
-        {
-            string name = $"VeldridNSViewExample.Shaders.{set}.{stage.ToString().Substring(0, 4).ToLower()}.spv";
-            return new ShaderDescription(stage, ResourceLoader.GetEmbeddedResourceBytes(name), entryPoint);
-        }
-
-        private ImageSharpCubemapTexture LoadCube(string name)
-        {
-            var posX = Image.Load(ResourceLoader.GetEmbeddedResourceStream($"VeldridNSViewExample.ThreeDee.{name}_posx.jpg"));
-            var negX = Image.Load(ResourceLoader.GetEmbeddedResourceStream($"VeldridNSViewExample.ThreeDee.{name}_negx.jpg"));
-            var posY = Image.Load(ResourceLoader.GetEmbeddedResourceStream($"VeldridNSViewExample.ThreeDee.{name}_posy.jpg"));
-            var negY = Image.Load(ResourceLoader.GetEmbeddedResourceStream($"VeldridNSViewExample.ThreeDee.{name}_negY.jpg"));
-            var posZ = Image.Load(ResourceLoader.GetEmbeddedResourceStream($"VeldridNSViewExample.ThreeDee.{name}_posZ.jpg"));
-            var negZ = Image.Load(ResourceLoader.GetEmbeddedResourceStream($"VeldridNSViewExample.ThreeDee.{name}_negZ.jpg"));
-            return new ImageSharpCubemapTexture(posX, negX, posY, negY, posZ, negZ);
         }
 
         private void CreateResources(ResourceFactory resourceFactory)
@@ -183,14 +122,23 @@ namespace VeldridNSViewExample
 
         void VeldridView_Rendering()
         {
-            _ticks += 10f;
+            var curUpdateTime = DateTime.Now;
+            if (_prevUpdateTime.Ticks == 0)
+            {
+                _prevUpdateTime = curUpdateTime;
+            }
+            var dt = (float)(curUpdateTime - _prevUpdateTime).TotalSeconds;
+            if (dt <= 0)
+            {
+                dt = float.Epsilon;
+            }
 
-            Matrix4x4 rotation = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, (_ticks / 1000f)) * Matrix4x4.CreateFromAxisAngle(Vector3.UnitX, (_ticks / 3000f));
+            Matrix4x4 rotation = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, dt / 2) * Matrix4x4.CreateFromAxisAngle(Vector3.UnitX, dt);
 
             _commandList.Begin();
             _commandList.UpdateBuffer(_modelMatrixBuffer, 0, ref rotation);
             _commandList.UpdateBuffer(_viewMatrixBuffer, 0, Matrix4x4.CreateLookAt(Vector3.UnitZ * 2.5f, Vector3.Zero, Vector3.UnitY));
-            _commandList.UpdateBuffer(_projectionMatrixBuffer, 0, Matrix4x4.CreatePerspectiveFieldOfView(1.0f, (float)_veldridView.Width / (float)_veldridView.Height, 0.5f, 100f));
+            _commandList.UpdateBuffer(_projectionMatrixBuffer, 0, Matrix4x4.CreatePerspectiveFieldOfView(1.0f, _veldridView.Width / (float)_veldridView.Height, 0.5f, 100f));
 
             _modelRender.Update(_commandList, _vertexBuffer, _indexBuffer);
 
@@ -198,8 +146,6 @@ namespace VeldridNSViewExample
 
             _veldridView.GraphicsDevice.SubmitCommands(_commandList);
             _veldridView.GraphicsDevice.SwapBuffers(_veldridView.MainSwapchain);
-
-            _frameIndex = (_frameIndex + 1) % (_clearColors.Length * _frameRepeatCount);
         }
 
         private static Vertex[] GetCubeVertices()

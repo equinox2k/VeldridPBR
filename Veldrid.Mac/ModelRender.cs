@@ -48,7 +48,7 @@ namespace VeldridNSViewExample
             _useTextureDiffuse = resourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _useTextureBumpmap = resourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _useTextureEffect = resourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
-            _effect = resourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
+            _effect = resourceFactory.CreateBuffer(new BufferDescription(32, BufferUsage.UniformBuffer));
             _lightDirection = resourceFactory.CreateBuffer(new BufferDescription(32, BufferUsage.UniformBuffer));
             _lightColor = resourceFactory.CreateBuffer(new BufferDescription(32, BufferUsage.UniformBuffer));
             _metallicRoughnessValues = resourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
