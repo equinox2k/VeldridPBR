@@ -7,6 +7,7 @@ using Veldrid.SPIRV;
 using System.Numerics;
 using Veldrid.ImageSharp;
 using SixLabors.ImageSharp;
+using VeldridNSViewExample.Render;
 
 namespace VeldridNSViewExample
 {
@@ -48,24 +49,35 @@ namespace VeldridNSViewExample
     [Register("ViewController")]
     public class ViewController : NSSplitViewController
     {
+
+        private Camera _camera;
+        private Mesh _screenMesh;
+        private DepthNormalRender _depthNormalRender;
+        private SaoRender _saoRender;
         private ModelRender _modelRender;
+        private OutputRender _outputRender;
         private VeldridView _veldridView;
         private CommandList _commandList;
 
         private readonly Vertex[] _vertices;
         private readonly ushort[] _indices;
+        private readonly Vertex[] _verticesMesh;
+        private readonly ushort[] _indicesMesh;
 
-        private DeviceBuffer _modelMatrixBuffer;
-        private DeviceBuffer _viewMatrixBuffer;
-        private DeviceBuffer _projectionMatrixBuffer;
         private DeviceBuffer _vertexBuffer;
         private DeviceBuffer _indexBuffer;
+        private DeviceBuffer _vertexMeshBuffer;
+        private DeviceBuffer _indexMeshBuffer;
         private DateTime _prevUpdateTime;
 
         public ViewController(IntPtr handle) : base(handle)
         {
             _vertices = GetCubeVertices();
             _indices = GetCubeIndices();
+
+            _screenMesh = new Mesh(0, 0, 2, 2, 2, 2);
+            _verticesMesh = _screenMesh.Vertices;
+            _indicesMesh = _screenMesh.Indices;
         }
 
         public override void ViewDidLoad()
@@ -90,25 +102,36 @@ namespace VeldridNSViewExample
 
         private void CreateResources(ResourceFactory resourceFactory)
         {
-            _commandList = resourceFactory.CreateCommandList();
+            _camera = new Camera
+            {
+                Eye = new Vector3(0, 0, 2.5f)
+            };
 
-            _modelMatrixBuffer = resourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
-            _viewMatrixBuffer = resourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
-            _projectionMatrixBuffer = resourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
+            _commandList = resourceFactory.CreateCommandList();
 
             _vertexBuffer = resourceFactory.CreateBuffer(new BufferDescription((uint)(Vertex.SizeInBytes * _vertices.Length), BufferUsage.VertexBuffer));
             _veldridView.GraphicsDevice.UpdateBuffer(_vertexBuffer, 0, _vertices);
             _indexBuffer = resourceFactory.CreateBuffer(new BufferDescription(sizeof(ushort) * (uint)_indices.Length, BufferUsage.IndexBuffer));
             _veldridView.GraphicsDevice.UpdateBuffer(_indexBuffer, 0, _indices);
 
+            _vertexMeshBuffer = resourceFactory.CreateBuffer(new BufferDescription((uint)(Vertex.SizeInBytes * _verticesMesh.Length), BufferUsage.VertexBuffer));
+            _veldridView.GraphicsDevice.UpdateBuffer(_vertexMeshBuffer, 0, _verticesMesh);
+            _indexMeshBuffer = resourceFactory.CreateBuffer(new BufferDescription(sizeof(ushort) * (uint)_indicesMesh.Length, BufferUsage.IndexBuffer));
+            _veldridView.GraphicsDevice.UpdateBuffer(_indexMeshBuffer, 0, _indicesMesh);
+
             var vertexLayoutDescription = new VertexLayoutDescription(
                 new VertexElementDescription("Position", VertexElementSemantic.Position, VertexElementFormat.Float3),
                 new VertexElementDescription("TexCoord", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float2),
                 new VertexElementDescription("Normal", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3),
                 new VertexElementDescription("Tangent", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3));
+                
+            _depthNormalRender = new DepthNormalRender(_veldridView.GraphicsDevice, _camera, vertexLayoutDescription);
+            _saoRender = new SaoRender(_veldridView.GraphicsDevice, _camera, vertexLayoutDescription);
 
-            _modelRender = new ModelRender(_veldridView.GraphicsDevice, resourceFactory, vertexLayoutDescription, _veldridView.MainSwapchain.Framebuffer, _modelMatrixBuffer, _viewMatrixBuffer, _projectionMatrixBuffer);
-           
+            _modelRender = new ModelRender(_veldridView.GraphicsDevice, _camera, vertexLayoutDescription);
+
+            _outputRender = new OutputRender(_veldridView.GraphicsDevice, _veldridView.MainSwapchain.Framebuffer, _camera, vertexLayoutDescription);
+
         }
 
         void VeldridView_DeviceReady()
@@ -118,7 +141,13 @@ namespace VeldridNSViewExample
 
         void VeldridView_Resized()
         {
+            _camera.Width = _veldridView.Width;
+            _camera.Height = _veldridView.Height;
+
+            //resize frame buffers
         }
+
+        //mesh create
 
         void VeldridView_Rendering()
         {
@@ -133,14 +162,24 @@ namespace VeldridNSViewExample
                 dt = float.Epsilon;
             }
 
-            Matrix4x4 rotation = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, dt / 2) * Matrix4x4.CreateFromAxisAngle(Vector3.UnitX, dt);
+            _camera.ModelMatrix = Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, dt / 2) * Matrix4x4.CreateFromAxisAngle(Vector3.UnitX, dt);
 
             _commandList.Begin();
-            _commandList.UpdateBuffer(_modelMatrixBuffer, 0, ref rotation);
-            _commandList.UpdateBuffer(_viewMatrixBuffer, 0, Matrix4x4.CreateLookAt(Vector3.UnitZ * 2.5f, Vector3.Zero, Vector3.UnitY));
-            _commandList.UpdateBuffer(_projectionMatrixBuffer, 0, Matrix4x4.CreatePerspectiveFieldOfView(1.0f, _veldridView.Width / (float)_veldridView.Height, 0.5f, 100f));
 
+            _depthNormalRender.Update(_commandList, _vertexBuffer, _indexBuffer);
+
+            var depthTexture = _depthNormalRender.GetColorTarget();
+
+            _saoRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, depthTexture);
             _modelRender.Update(_commandList, _vertexBuffer, _indexBuffer);
+
+            _commandList.SetFramebuffer(_veldridView.MainSwapchain.Framebuffer);
+            _commandList.ClearColorTarget(0, RgbaFloat.Grey);
+
+            var diffuseTexture = _modelRender.GetColorTarget();
+            var ambientTexture = _modelRender.GetColorTarget();
+
+            _outputRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, diffuseTexture, ambientTexture);
 
             _commandList.End();
 

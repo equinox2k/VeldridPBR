@@ -75,7 +75,6 @@ namespace VeldridNSViewExample
 
                 if (_backend == GraphicsBackend.Metal)
                 {
-            
                     GraphicsDevice = GraphicsDevice.CreateMetal(_deviceOptions);
                 }
 

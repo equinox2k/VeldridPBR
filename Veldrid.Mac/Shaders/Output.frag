@@ -1,15 +1,15 @@
 #version 450
 
-layout(set = 1, binding = 0) uniform Opacity
+layout(set = 0, binding = 0) uniform Opacity
 {
     float uOpacity;
 };
 
+layout(set = 0, binding = 3) uniform sampler LinearSampler;
+
 layout(set = 1, binding = 1) uniform texture2D TextureDiffuse;
 
 layout(set = 1, binding = 2) uniform texture2D TextureAmbientOcclusion;
-
-layout(set = 1, binding = 3) uniform sampler LinearSampler;
 
 layout(location = 0) in vec2 iTexCoord;
 

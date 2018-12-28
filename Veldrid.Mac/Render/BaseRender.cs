@@ -4,7 +4,7 @@ using Veldrid;
 using Veldrid.ImageSharp;
 using Veldrid.Mac;
 
-namespace VeldridNSViewExample
+namespace VeldridNSViewExample.Render
 {
     public abstract class BaseRender
     {
@@ -19,7 +19,7 @@ namespace VeldridNSViewExample
             return new ImageSharpCubemapTexture(posX, negX, posY, negY, posZ, negZ);
         }
 
-        protected ShaderDescription LoadShader(ResourceFactory factory, string set, ShaderStages stage, string entryPoint)
+        protected ShaderDescription LoadShader(string set, ShaderStages stage, string entryPoint)
         {
             string name = $"VeldridNSViewExample.Shaders.{set}.{stage.ToString().Substring(0, 4).ToLower()}.spv";
             return new ShaderDescription(stage, ResourceLoader.GetEmbeddedResourceBytes(name), entryPoint);

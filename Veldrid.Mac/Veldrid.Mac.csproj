@@ -108,10 +108,10 @@
       <HintPath>..\packages\System.Memory.4.5.1\lib\netstandard2.0\System.Memory.dll</HintPath>
     </Reference>
     <Reference Include="SixLabors.Core">
-      <HintPath>..\packages\SixLabors.Core.1.0.0-beta0006\lib\netstandard1.1\SixLabors.Core.dll</HintPath>
+      <HintPath>..\packages\SixLabors.Core.1.0.0-dev000094\lib\netstandard2.0\SixLabors.Core.dll</HintPath>
     </Reference>
     <Reference Include="SixLabors.ImageSharp">
-      <HintPath>..\packages\SixLabors.ImageSharp.1.0.0-beta0005\lib\netstandard2.0\SixLabors.ImageSharp.dll</HintPath>
+      <HintPath>..\packages\SixLabors.ImageSharp.1.0.0-dev002298\lib\netstandard2.0\SixLabors.ImageSharp.dll</HintPath>
     </Reference>
     <Reference Include="Veldrid.ImageSharp">
       <HintPath>..\packages\Veldrid.ImageSharp.4.5.0\lib\netstandard2.0\Veldrid.ImageSharp.dll</HintPath>
@@ -133,6 +133,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
+    <Folder Include="Render\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
@@ -158,9 +159,14 @@
     <Compile Include="ViewController.cs" />
     <Compile Include="VeldridView.cs" />
     <Compile Include="ResourceLoader.cs" />
-    <Compile Include="ProcessedTexture.cs" />
-    <Compile Include="ModelRender.cs" />
-    <Compile Include="BaseRender.cs" />
+    <Compile Include="Camera.cs" />
+    <Compile Include="MathHelper.cs" />
+    <Compile Include="Render\ModelRender.cs" />
+    <Compile Include="Render\BaseRender.cs" />
+    <Compile Include="Render\DepthNormalRender.cs" />
+    <Compile Include="Render\SaoRender.cs" />
+    <Compile Include="Render\OutputRender.cs" />
+    <Compile Include="Mesh.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Main.storyboard" />

@@ -7,88 +7,88 @@
 #define PI2 6.28318530718
 #define EPSILON 1e-6
 
-layout(set = 1, binding = 0) uniform CameraNear
+layout(set = 0, binding = 0) uniform CameraNear
 {
     float uCameraNear;
 };
 
-layout(set = 1, binding = 1) uniform CameraFar
+layout(set = 0, binding = 1) uniform CameraFar
 {
     float uCameraFar;
 };
 
-layout(set = 1, binding = 2) uniform ProjectionMatrix
+layout(set = 0, binding = 2) uniform ProjectionMatrix
 {
     mat4 uProjectionMatrix;
 };
 
-layout(set = 1, binding = 3) uniform InverseProjectionMatrix
+layout(set = 0, binding = 3) uniform InverseProjectionMatrix
 {
     mat4 uInverseProjectionMatrix;
 };
 
-layout(set = 1, binding = 4) uniform Scale
+layout(set = 0, binding = 4) uniform Scale
 {
     float uScale;
 };
 
-layout(set = 1, binding = 5) uniform Intensity
+layout(set = 0, binding = 5) uniform Intensity
 {
     float uIntensity;
 };
 
-layout(set = 1, binding = 6) uniform Bias
+layout(set = 0, binding = 6) uniform Bias
 {
     float uBias;
 };
 
-layout(set = 1, binding = 7) uniform KernelRadius
+layout(set = 0, binding = 7) uniform KernelRadius
 {
     float uKernelRadius;
 };
 
-layout(set = 1, binding = 8) uniform MinResolution
+layout(set = 0, binding = 8) uniform MinResolution
 {
     float uMinResolution;
 };
 
-layout(set = 1, binding = 9) uniform Size
+layout(set = 0, binding = 9) uniform Size
 {
     vec2 uSize;
 };
 
-layout(set = 1, binding = 10) uniform Seed
+layout(set = 0, binding = 10) uniform Seed
 {
     float uSeed;
 };
 
-layout(set = 1, binding = 11) uniform texture2D TextureDepthNormal;
+layout(set = 0, binding = 12) uniform sampler PointSampler;
 
-layout(set = 1, binding = 12) uniform sampler PointSampler;
+layout(set = 1, binding = 11) uniform texture2D TextureDepthNormal;
 
 layout(location = 0) in vec2 iTexCoord;
 
 layout(location = 0) out vec4 oFragColor;
 
-float pow2(const in float x) {
+float pow2(float x) {
     return x*x;
 }
 
-float rand(const in vec2 uv) {
+float rand(vec2 uv) {
     const float a = 12.9898, b = 78.233, c = 43758.5453;
     float dt = dot(uv.xy, vec2(a, b)), sn = mod(dt, PI);
     return fract(sin(sn) * c);
 }
 
-float perspectiveDepthToViewZ(const in float invClipZ, const in float near, const in float far) {
+float perspectiveDepthToViewZ(float invClipZ, float near, float far) {
     return (near * far) / ( (far - near) * invClipZ - far);
 }
 
-float getViewZ(const in float depth) {
+float getViewZ(float depth) {
     return perspectiveDepthToViewZ(depth, uCameraNear, uCameraFar);
 }
 
-vec3 getViewPosition(const in vec2 screenPosition, const in float depth, const in float viewZ) {
+vec3 getViewPosition(vec2 screenPosition, float depth, float viewZ) {
     float clipW = uProjectionMatrix[2][3] * viewZ + uProjectionMatrix[3][3];
     vec4 clipPosition = vec4((vec3(screenPosition, depth) - 0.5) * 2.0, 1.0);
     clipPosition *= clipW;
@@ -112,12 +112,12 @@ vec3 DecodeViewNormalStereo(vec4 enc4)
     return n;
 }
 
-vec3 getViewNormal(const in vec2 screenPosition) {
+vec3 getViewNormal(vec2 screenPosition) {
     vec4 textureColor = texture(sampler2D(TextureDepthNormal, PointSampler), screenPosition);
     return DecodeViewNormalStereo(textureColor);
 }
 
-float getDepth(const in vec2 screenPosition) {
+float getDepth(vec2 screenPosition) {
     vec4 textureColor = texture(sampler2D(TextureDepthNormal, PointSampler), screenPosition);
     return DecodeFloatRG(textureColor.zw);
 }
@@ -125,7 +125,7 @@ float getDepth(const in vec2 screenPosition) {
 float scaleDividedByCameraFar;
 float minResolutionMultipliedByCameraFar;
 
-float getOcclusion(const in vec3 centerViewPosition, const in vec3 centerViewNormal, const in vec3 sampleViewPosition) {
+float getOcclusion(vec3 centerViewPosition, vec3 centerViewNormal, vec3 sampleViewPosition) {
     vec3 viewDelta = sampleViewPosition - centerViewPosition;
     float viewDistance = length(viewDelta);
     float scaledScreenDistance = scaleDividedByCameraFar * viewDistance;
@@ -135,7 +135,7 @@ float getOcclusion(const in vec3 centerViewPosition, const in vec3 centerViewNor
 const float ANGLE_STEP = PI2 * float( NUM_RINGS ) / float( NUM_SAMPLES );
 const float INV_NUM_SAMPLES = 1.0 / float(NUM_SAMPLES);
 
-float getAmbientOcclusion(const in vec3 centerViewPosition) {
+float getAmbientOcclusion(vec3 centerViewPosition) {
     scaleDividedByCameraFar = uScale / uCameraFar;
     minResolutionMultipliedByCameraFar = uMinResolution * uCameraFar;
     vec3 centerViewNormal = getViewNormal(iTexCoord);
