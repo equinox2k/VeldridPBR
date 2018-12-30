@@ -2,10 +2,10 @@
 
 layout(set = 0, binding = 0) uniform InverseModelViewMatrix
 {
-    mat3 uInverseModelViewMatrix;
+    mat4 uInverseModelViewMatrix;
 };
 
-layout(set = 0, binding = 0) uniform InverseProjectionMatrix
+layout(set = 0, binding = 1) uniform InverseProjectionMatrix
 {
     mat4 uInverseProjectionMatrix;
 };
@@ -16,7 +16,6 @@ layout(location = 0) out vec3 oViewDirection;
 
 void main()
 {
-    oViewDirection = uInverseModelViewMatrix * (uInverseProjectionMatrix * vec4(iPosition, 1.0)).xyz;
+    oViewDirection = (uInverseModelViewMatrix * uInverseProjectionMatrix * vec4(iPosition, 1.0)).xyz;
     gl_Position = vec4(iPosition, 1.0);
-    gl_Position.y = -gl_Position.y;
 }

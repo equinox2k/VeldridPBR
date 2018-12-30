@@ -182,7 +182,7 @@ namespace VeldridNSViewExample.Render
             commandList.UpdateBuffer(_cameraPosition, 0, new Vector4(0, 0, 2.5f, 0));
 
             commandList.SetFramebuffer(_framebuffer);
-            commandList.ClearColorTarget(0, RgbaFloat.Grey);
+            commandList.ClearColorTarget(0, RgbaFloat.Clear);
             commandList.ClearDepthStencil(1f);
             commandList.SetPipeline(_pipeline);
             commandList.SetVertexBuffer(0, vertexBuffer);

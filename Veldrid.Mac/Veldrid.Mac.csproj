@@ -167,6 +167,7 @@
     <Compile Include="Render\SaoRender.cs" />
     <Compile Include="Render\OutputRender.cs" />
     <Compile Include="Mesh.cs" />
+    <Compile Include="Render\SkyboxRender.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Main.storyboard" />

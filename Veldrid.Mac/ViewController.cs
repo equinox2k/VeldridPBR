@@ -55,6 +55,7 @@ namespace VeldridNSViewExample
         private DepthNormalRender _depthNormalRender;
         private SaoRender _saoRender;
         private ModelRender _modelRender;
+        private SkyboxRender _skyboxRender;
         private OutputRender _outputRender;
         private VeldridView _veldridView;
         private CommandList _commandList;
@@ -130,6 +131,7 @@ namespace VeldridNSViewExample
 
             _modelRender = new ModelRender(_veldridView.GraphicsDevice, _camera, vertexLayoutDescription);
 
+            _skyboxRender = new SkyboxRender(_veldridView.GraphicsDevice, _veldridView.MainSwapchain.Framebuffer, _camera, vertexLayoutDescription);
             _outputRender = new OutputRender(_veldridView.GraphicsDevice, _veldridView.MainSwapchain.Framebuffer, _camera, vertexLayoutDescription);
 
         }
@@ -171,15 +173,20 @@ namespace VeldridNSViewExample
             var depthTexture = _depthNormalRender.GetColorTarget();
 
             _saoRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, depthTexture);
+
+            var saoTexture = _saoRender.GetColorTarget();
+
             _modelRender.Update(_commandList, _vertexBuffer, _indexBuffer);
 
-            _commandList.SetFramebuffer(_veldridView.MainSwapchain.Framebuffer);
-            _commandList.ClearColorTarget(0, RgbaFloat.Grey);
+            //_commandList.SetFramebuffer(_veldridView.MainSwapchain.Framebuffer);
+            //_commandList.ClearColorTarget(0, RgbaFloat.Grey);
+            //_commandList.ClearDepthStencil(1f);
+
 
             var diffuseTexture = _modelRender.GetColorTarget();
-            var ambientTexture = _modelRender.GetColorTarget();
 
-            _outputRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, diffuseTexture, ambientTexture);
+            _skyboxRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer);
+           // _outputRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, diffuseTexture, saoTexture);
 
             _commandList.End();
 

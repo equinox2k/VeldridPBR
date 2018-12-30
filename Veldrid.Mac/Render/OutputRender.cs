@@ -12,7 +12,6 @@ namespace VeldridNSViewExample.Render
         private readonly GraphicsDevice _graphicsDevice;
         private readonly Framebuffer _framebuffer;
         private readonly DeviceBuffer _opacityBuffer;
-        private TextureView _textureAmbientOcclusionView;
         private readonly Sampler _linearSampler;
         private readonly ResourceSet _outputFragSet0;
         private readonly ResourceLayout _outputFragLayout1;
@@ -25,8 +24,6 @@ namespace VeldridNSViewExample.Render
             _camera = camera;
 
             _opacityBuffer = graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
-            var textureAmbientOcclusion = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.radiance_negx.jpg")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory);
-            _textureAmbientOcclusionView = graphicsDevice.ResourceFactory.CreateTextureView(textureAmbientOcclusion);
             _linearSampler = graphicsDevice.LinearSampler;
 
             var modelShaders = graphicsDevice.ResourceFactory.CreateFromSpirv(LoadShader("Output", ShaderStages.Vertex, "main"), LoadShader("Output", ShaderStages.Fragment, "main"));

@@ -36,7 +36,7 @@ namespace VeldridNSViewExample.Render
             _modelMatrixBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
             _viewMatrixBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
             _projectionMatrixBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
-            _normalMatrixBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(48, BufferUsage.UniformBuffer));
+            _normalMatrixBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
 
             var modelShaders = _graphicsDevice.ResourceFactory.CreateFromSpirv(LoadShader("DepthNormal", ShaderStages.Vertex, "main"), LoadShader("DepthNormal", ShaderStages.Fragment, "main"));
 

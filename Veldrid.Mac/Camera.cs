@@ -42,30 +42,36 @@ namespace VeldridNSViewExample
             }
         }
 
-        private float[] ToMat3Array(Matrix4x4 matrix)
-        {
-            return new[] {
-                matrix.M11, matrix.M12, matrix.M13,
-                matrix.M21, matrix.M22, matrix.M23,
-                matrix.M31, matrix.M32, matrix.M33
-            };
-        }
-
-        public float[] NormalMatrix
+        public Matrix4x4 NormalMatrix
         {
             get
             {
                 Matrix4x4.Invert(ModelViewMatrix, out var inverseModelViewMatrix);
-                return ToMat3Array(Matrix4x4.Transpose(inverseModelViewMatrix));
+                var result = Matrix4x4.Transpose(inverseModelViewMatrix);
+                result.M14 = 0;
+                result.M24 = 0;
+                result.M34 = 0;
+                result.M41 = 0;
+                result.M42 = 0;
+                result.M43 = 0;
+                result.M44 = 0;
+                return result;
             }
         }
 
-        public float[] InverseModelViewMatrix
+        public Matrix4x4 InverseModelViewMatrix
         {
             get
             {
                 Matrix4x4.Invert(ModelViewMatrix, out var inverseModelViewMatrix);
-                return ToMat3Array(inverseModelViewMatrix);
+                inverseModelViewMatrix.M14 = 0;
+                inverseModelViewMatrix.M24 = 0;
+                inverseModelViewMatrix.M34 = 0;
+                inverseModelViewMatrix.M41 = 0;
+                inverseModelViewMatrix.M42 = 0;
+                inverseModelViewMatrix.M43 = 0;
+                inverseModelViewMatrix.M44 = 0;
+                return inverseModelViewMatrix;
             }
         }
 
