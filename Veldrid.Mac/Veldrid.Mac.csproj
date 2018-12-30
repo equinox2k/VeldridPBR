@@ -150,8 +150,6 @@
     <None Include="Shaders\Readme.txt" />
     <None Include="Shaders\Sao.frag" />
     <None Include="Shaders\Sao.vert" />
-    <None Include="Shaders\Skybox.frag" />
-    <None Include="Shaders\Skybox.vert" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Main.cs" />
@@ -167,7 +165,6 @@
     <Compile Include="Render\SaoRender.cs" />
     <Compile Include="Render\OutputRender.cs" />
     <Compile Include="Mesh.cs" />
-    <Compile Include="Render\SkyboxRender.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Main.storyboard" />
@@ -183,8 +180,6 @@
     <EmbeddedResource Include="Shaders\Output.vert.spv" />
     <EmbeddedResource Include="Shaders\Sao.frag.spv" />
     <EmbeddedResource Include="Shaders\Sao.vert.spv" />
-    <EmbeddedResource Include="Shaders\Skybox.frag.spv" />
-    <EmbeddedResource Include="Shaders\Skybox.vert.spv" />
   </ItemGroup>
   <ItemGroup>
     <NativeReference Include="..\packages\Veldrid.SPIRV.1.0.5\runtimes\osx-x64\native\libveldrid-spirv.dylib">
