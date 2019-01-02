@@ -28,13 +28,13 @@ layout(set = 1, binding = 4) uniform SampleWeights
     float uSampleWeights[KERNEL_RADIUS + 1];
 };
 
-layout(set = 1, binding = 5) uniform texture2D TextureDiffuse;
+layout(set = 1, binding = 5) uniform sampler LinearSampler;
 
-layout(set = 1, binding = 6) uniform texture2D TextureDepthNormal;
+layout(set = 1, binding = 6) uniform sampler PointSampler;
 
-layout(set = 1, binding = 7) uniform sampler LinearSampler;
+layout(set = 2, binding = 0) uniform texture2D TextureDepthNormal;
 
-layout(set = 1, binding = 8) uniform sampler PointSampler;
+layout(set = 2, binding = 1) uniform texture2D TextureDiffuse;
 
 layout(location = 0) in vec2 iTexCoord;
 layout(location = 1) in vec2 iInvSize;
@@ -62,16 +62,16 @@ vec3 DecodeViewNormalStereo(vec4 enc4)
     return n;
 }
 
-float getDepth(const in vec2 screenPosition) {
+float getDepth(vec2 screenPosition) {
     vec4 textureColor = texture(sampler2D(TextureDepthNormal, PointSampler), screenPosition);
     return DecodeFloatRG(textureColor.zw);
 }
 
-float perspectiveDepthToViewZ(const in float invClipZ, const in float near, const in float far) {
+float perspectiveDepthToViewZ(float invClipZ, float near, float far) {
     return (near * far) / ((far - near) * invClipZ - far);
 }
 
-float getViewZ(const in float depth) {
+float getViewZ(float depth) {
     return perspectiveDepthToViewZ(depth, uCameraNear, uCameraFar);
 }
 

@@ -62,9 +62,9 @@ layout(set = 0, binding = 10) uniform Seed
     float uSeed;
 };
 
-layout(set = 0, binding = 12) uniform sampler PointSampler;
+layout(set = 0, binding = 11) uniform sampler PointSampler;
 
-layout(set = 1, binding = 11) uniform texture2D TextureDepthNormal;
+layout(set = 1, binding = 0) uniform texture2D TextureDepthNormal;
 
 layout(location = 0) in vec2 iTexCoord;
 
@@ -144,12 +144,14 @@ float getAmbientOcclusion(vec3 centerViewPosition) {
     vec2 radiusStep = radius;
     float occlusionSum = 0.0;
     float weightSum = 0.0;
-    for (int i = 0; i < NUM_SAMPLES; i ++) {
+    for (int i = 0; i < NUM_SAMPLES; i ++) 
+    {
         vec2 sampleUv = iTexCoord + vec2(cos(angle), sin(angle)) * radius;
         radius += radiusStep;
         angle += ANGLE_STEP;
         float sampleDepth = getDepth(sampleUv);
-        if (sampleDepth >= (1.0 - EPSILON)) {
+        if (sampleDepth >= (1.0 - EPSILON)) 
+        {
             continue;
         }
         float sampleViewZ = getViewZ(sampleDepth);
@@ -157,7 +159,9 @@ float getAmbientOcclusion(vec3 centerViewPosition) {
         occlusionSum += getOcclusion(centerViewPosition, centerViewNormal, sampleViewPosition);
         weightSum += 1.0;
     }
-    if (weightSum == 0.0) discard;
+    if (weightSum == 0.0) {
+        discard;
+    }
     return occlusionSum * (uIntensity / weightSum);
 }
 
@@ -169,6 +173,7 @@ void main() {
     float centerViewZ = getViewZ(centerDepth);
     vec3 viewPosition = getViewPosition(iTexCoord, centerDepth, centerViewZ);
     float ambientOcclusion = getAmbientOcclusion(viewPosition);
-    oFragColor = vec4(vec3(1.0) * (1.0 - ambientOcclusion), 1.0);
+   //oFragColor = vec4(vec3(1.0) * (1.0 - ambientOcclusion), 1.0);
+    oFragColor = vec4(uCameraNear, uCameraNear, uCameraNear, 1.0);
 }
 

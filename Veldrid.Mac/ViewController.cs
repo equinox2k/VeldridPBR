@@ -8,6 +8,8 @@ using System.Numerics;
 using Veldrid.ImageSharp;
 using SixLabors.ImageSharp;
 using VeldridNSViewExample.Render;
+using SixLabors.ImageSharp.PixelFormats;
+using System.Collections.Generic;
 
 namespace VeldridNSViewExample
 {
@@ -53,6 +55,7 @@ namespace VeldridNSViewExample
         private Camera _camera;
         private Mesh _screenMesh;
         private DepthNormalRender _depthNormalRender;
+        private DepthLimitedBlurRender _depthLimitedBlurRender;
         private SaoRender _saoRender;
         private ModelRender _modelRender;
         private OutputRender _outputRender;
@@ -104,7 +107,7 @@ namespace VeldridNSViewExample
         {
             _camera = new Camera
             {
-                Eye = new Vector3(0, 0, 2.5f)
+                Eye = new Vector3(0, 0, 5.0f)
             };
 
             _commandList = resourceFactory.CreateCommandList();
@@ -126,6 +129,7 @@ namespace VeldridNSViewExample
                 new VertexElementDescription("Tangent", VertexElementSemantic.TextureCoordinate, VertexElementFormat.Float3));
                 
             _depthNormalRender = new DepthNormalRender(_veldridView.GraphicsDevice, _camera, vertexLayoutDescription);
+            _depthLimitedBlurRender = new DepthLimitedBlurRender(_veldridView.GraphicsDevice, _camera, vertexLayoutDescription);
             _saoRender = new SaoRender(_veldridView.GraphicsDevice, _camera, vertexLayoutDescription);
 
             _modelRender = new ModelRender(_veldridView.GraphicsDevice, _camera, vertexLayoutDescription);
@@ -144,7 +148,11 @@ namespace VeldridNSViewExample
             _camera.Width = _veldridView.Width;
             _camera.Height = _veldridView.Height;
 
-            //resize frame buffers
+            _depthNormalRender.Resize();
+            _depthLimitedBlurRender.Resize();
+            _modelRender.Resize();
+            _outputRender.Resize();
+            _saoRender.Resize();
         }
 
         //mesh create
@@ -168,23 +176,34 @@ namespace VeldridNSViewExample
 
             _depthNormalRender.Update(_commandList, _vertexBuffer, _indexBuffer);
 
-            var depthTexture = _depthNormalRender.GetColorTarget();
+            var depthNormalTexture = _depthNormalRender.GetColorTarget();
 
-            _saoRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, depthTexture);
+            _saoRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, depthNormalTexture);
+            _modelRender.Update(_commandList, _vertexBuffer, _indexBuffer);
+
+
+
 
             var saoTexture = _saoRender.GetColorTarget();
 
-            _modelRender.Update(_commandList, _vertexBuffer, _indexBuffer);
 
+            //var aaaa = new Image<Rgba32>(1000, 1000);
+            //var bbbb = new ImageSharpTexture(aaaa);
+            //var cccc = bbbb.CreateDeviceTexture(_veldridView.GraphicsDevice, _veldridView.GraphicsDevice.ResourceFactory);
+
+            //_depthLimitedBlurRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, depthNormalTexture, saoTexture);
+
+            //var blurSao = _depthLimitedBlurRender.GetColorTarget();
             //_commandList.SetFramebuffer(_veldridView.MainSwapchain.Framebuffer);
             //_commandList.ClearColorTarget(0, RgbaFloat.Grey);
             //_commandList.ClearDepthStencil(1f);
 
+
             var diffuseTexture = _modelRender.GetColorTarget();
 
             _outputRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, diffuseTexture, saoTexture);
-
-            _commandList.End();
+           
+             _commandList.End();
 
             _veldridView.GraphicsDevice.SubmitCommands(_commandList);
             _veldridView.GraphicsDevice.SwapBuffers(_veldridView.MainSwapchain);
@@ -226,7 +245,29 @@ namespace VeldridNSViewExample
                 new Vertex(new Vector3(-0.5f, -0.5f, +0.5f), new Vector2(0, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0))
             };
 
-            return vertices;
+            var tvertices = new List<Vertex>();
+            for (var j = 0; j < 2; j++)
+            {
+                for (var i = 0; i < vertices.Length; i++)
+                {
+                    var vertex = vertices[i];
+                    var tvertex = new Vertex();
+                    tvertex.PositionX = vertex.PositionX + (j * 0.25f);
+                    tvertex.PositionY = vertex.PositionY + (j * 1.25f);
+                    tvertex.PositionZ = vertex.PositionZ;
+                    tvertex.TexCoordX = vertex.TexCoordX;
+                    tvertex.TexCoordY = vertex.TexCoordY;
+                    tvertex.NormalX = vertex.NormalX;
+                    tvertex.NormalY = vertex.NormalY;
+                    tvertex.NormalZ = vertex.NormalZ;
+                    tvertex.TangentX = vertex.TangentX;
+                    tvertex.TangentY = vertex.TangentY;
+                    tvertex.TangentZ = vertex.TangentZ;
+                    tvertices.Add(tvertex);
+                }
+            }
+
+            return tvertices.ToArray();
         }
 
         private static ushort[] GetCubeIndices()
@@ -241,7 +282,17 @@ namespace VeldridNSViewExample
                 20,21,22, 20,22,23,
             };
 
-            return indices;
+            var tindices = new List<ushort>();
+            for (var j = 0; j < 2; j++)
+            {
+                for (var i = 0; i < indices.Length; i++)
+                {
+                    var index = indices[i] + (j * 24);
+                    tindices.Add((ushort)index);
+                }
+            }
+
+            return tindices.ToArray();
         }
 
 

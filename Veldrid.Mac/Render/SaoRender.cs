@@ -10,11 +10,12 @@ namespace VeldridNSViewExample.Render
 {
     public class SaoRender : BaseRender
     {
+        private Texture _colorTarget;
+        private Framebuffer _framebuffer;
+
         private readonly float _seedValue;
         private readonly GraphicsDevice _graphicsDevice;
         private readonly Camera _camera;
-        private readonly Texture _colorTarget;
-        private readonly Framebuffer _framebuffer;
         private readonly DeviceBuffer _cameraNearBuffer;
         private readonly DeviceBuffer _cameraFarBuffer;
         private readonly DeviceBuffer _projectionMatrixBuffer;
@@ -26,7 +27,6 @@ namespace VeldridNSViewExample.Render
         private readonly DeviceBuffer _minResolutionBuffer;
         private readonly DeviceBuffer _sizeBuffer;
         private readonly DeviceBuffer _seedBuffer;
-        private readonly Sampler _pointSampler;
         private readonly ResourceSet _outputFragSet0;
         private readonly ResourceLayout _outputFragLayout1;
         private readonly Pipeline _pipeline;
@@ -36,15 +36,20 @@ namespace VeldridNSViewExample.Render
             return _colorTarget;
         }
 
+        public override void Resize()
+        {
+            Texture depthTarget = _graphicsDevice.ResourceFactory.CreateTexture(TextureDescription.Texture2D(_camera.Width, _camera.Height, 1, 1, PixelFormat.R32_Float, TextureUsage.DepthStencil));
+            _colorTarget = _graphicsDevice.ResourceFactory.CreateTexture(TextureDescription.Texture2D(_camera.Width, _camera.Height, 1, 1, PixelFormat.R32_G32_B32_A32_Float, TextureUsage.RenderTarget | TextureUsage.Sampled));
+            _framebuffer = _graphicsDevice.ResourceFactory.CreateFramebuffer(new FramebufferDescription(depthTarget, _colorTarget));
+        }
+
         public SaoRender(GraphicsDevice graphicsDevice, Camera camera, VertexLayoutDescription vertexLayoutDescription)
         {
             _seedValue = (float)new Random().NextDouble();
             _graphicsDevice = graphicsDevice;
             _camera = camera;
 
-            Texture depthTarget = _graphicsDevice.ResourceFactory.CreateTexture(TextureDescription.Texture2D(1000, 1000, 1, 1, PixelFormat.R32_Float, TextureUsage.DepthStencil));
-            _colorTarget = _graphicsDevice.ResourceFactory.CreateTexture(TextureDescription.Texture2D(1000, 1000, 1, 1, PixelFormat.R32_G32_B32_A32_Float, TextureUsage.RenderTarget | TextureUsage.Sampled));
-            _framebuffer = _graphicsDevice.ResourceFactory.CreateFramebuffer(new FramebufferDescription(depthTarget, _colorTarget));
+            Resize();
 
             _cameraNearBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _cameraFarBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
@@ -57,7 +62,6 @@ namespace VeldridNSViewExample.Render
             _minResolutionBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _sizeBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _seedBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
-            _pointSampler = graphicsDevice.PointSampler;
 
             var modelShaders = _graphicsDevice.ResourceFactory.CreateFromSpirv(LoadShader("Sao", ShaderStages.Vertex, "main"), LoadShader("Sao", ShaderStages.Fragment, "main"));
 
@@ -104,14 +108,14 @@ namespace VeldridNSViewExample.Render
                 _minResolutionBuffer,
                 _sizeBuffer,
                 _seedBuffer,
-                _pointSampler));
+                _graphicsDevice.LinearSampler));
         }
 
-        public void Update(CommandList commandList, DeviceBuffer vertexBuffer, DeviceBuffer indexBuffer, Texture depthTexture)
+        public void Update(CommandList commandList, DeviceBuffer vertexBuffer, DeviceBuffer indexBuffer, Texture depthNormalTexture)
         {
             var outputFragSet1 = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
                 _outputFragLayout1,
-                _graphicsDevice.ResourceFactory.CreateTextureView(depthTexture)));
+                _graphicsDevice.ResourceFactory.CreateTextureView(depthNormalTexture)));
 
             commandList.UpdateBuffer(_cameraNearBuffer, 0, _camera.Near);
             commandList.UpdateBuffer(_cameraFarBuffer, 0, _camera.Far);
@@ -122,7 +126,7 @@ namespace VeldridNSViewExample.Render
             commandList.UpdateBuffer(_biasBuffer, 0, 0.5f);
             commandList.UpdateBuffer(_kernalRadiusBuffer, 0, 10.0f);
             commandList.UpdateBuffer(_minResolutionBuffer, 0, 0.01f);
-            commandList.UpdateBuffer(_sizeBuffer, 0, new Vector2(1000.0f, 1000.0f));
+            commandList.UpdateBuffer(_sizeBuffer, 0, new Vector2(_camera.Width, _camera.Height));
             commandList.UpdateBuffer(_seedBuffer, 0, _seedValue);
 
             commandList.SetFramebuffer(_framebuffer);

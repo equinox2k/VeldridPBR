@@ -165,6 +165,7 @@
     <Compile Include="Render\SaoRender.cs" />
     <Compile Include="Render\OutputRender.cs" />
     <Compile Include="Mesh.cs" />
+    <Compile Include="Render\DepthLimitedBlurRender.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Main.storyboard" />
@@ -180,6 +181,8 @@
     <EmbeddedResource Include="Shaders\Output.vert.spv" />
     <EmbeddedResource Include="Shaders\Sao.frag.spv" />
     <EmbeddedResource Include="Shaders\Sao.vert.spv" />
+    <EmbeddedResource Include="ThreeDee\bumpmap.jpg" />
+    <EmbeddedResource Include="ThreeDee\diffuse.png" />
   </ItemGroup>
   <ItemGroup>
     <NativeReference Include="..\packages\Veldrid.SPIRV.1.0.5\runtimes\osx-x64\native\libveldrid-spirv.dylib">

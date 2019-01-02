@@ -10,10 +10,11 @@ namespace VeldridNSViewExample.Render
 {
     public class ModelRender : BaseRender
     {
+        private Texture _colorTarget;
+        private Framebuffer _framebuffer;
+
         private readonly GraphicsDevice _graphicsDevice;
         private readonly Camera _camera;
-        private readonly Texture _colorTarget;
-        private readonly Framebuffer _framebuffer;
         private readonly DeviceBuffer _modelMatrixBuffer;
         private readonly DeviceBuffer _viewMatrixBuffer;
         private readonly DeviceBuffer _projectionMatrixBuffer;
@@ -51,14 +52,19 @@ namespace VeldridNSViewExample.Render
             return _colorTarget;
         }
 
+        public override void Resize()
+        {
+            Texture depthTarget = _graphicsDevice.ResourceFactory.CreateTexture(TextureDescription.Texture2D(_camera.Width, _camera.Height, 1, 1, PixelFormat.R32_Float, TextureUsage.DepthStencil));
+            _colorTarget = _graphicsDevice.ResourceFactory.CreateTexture(TextureDescription.Texture2D(_camera.Width, _camera.Height, 1, 1, PixelFormat.R32_G32_B32_A32_Float, TextureUsage.RenderTarget | TextureUsage.Sampled));
+            _framebuffer = _graphicsDevice.ResourceFactory.CreateFramebuffer(new FramebufferDescription(depthTarget, _colorTarget));
+        }
+
         public ModelRender(GraphicsDevice graphicsDevice, Camera camera, VertexLayoutDescription vertexLayoutDescription)
         {
             _graphicsDevice = graphicsDevice;
             _camera = camera;
 
-            Texture depthTarget = _graphicsDevice.ResourceFactory.CreateTexture(TextureDescription.Texture2D(1000, 1000, 1, 1, PixelFormat.R32_Float, TextureUsage.DepthStencil));
-            _colorTarget = _graphicsDevice.ResourceFactory.CreateTexture(TextureDescription.Texture2D(1000, 1000, 1, 1, PixelFormat.R32_G32_B32_A32_Float, TextureUsage.RenderTarget | TextureUsage.Sampled));
-            _framebuffer = _graphicsDevice.ResourceFactory.CreateFramebuffer(new FramebufferDescription(depthTarget, _colorTarget));
+            Resize();
 
             _modelMatrixBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
             _viewMatrixBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
@@ -82,11 +88,11 @@ namespace VeldridNSViewExample.Render
             _textureEnvMapGlossView = _graphicsDevice.ResourceFactory.CreateTextureView(_textureEnvMapGloss);
             _textureBRDF = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.brdf.png")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
             _textureBRDFView = _graphicsDevice.ResourceFactory.CreateTextureView(_textureBRDF);
-            _textureDiffuse = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.brdf.png")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
+            _textureDiffuse = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.diffuse.png")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
             _textureDiffuseView = _graphicsDevice.ResourceFactory.CreateTextureView(_textureDiffuse);
-            _textureBumpmap = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.brdf.png")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
+            _textureBumpmap = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.bumpmap.jpg")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
             _textureBumpmapView = _graphicsDevice.ResourceFactory.CreateTextureView(_textureBumpmap);
-            _textureEffect = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.brdf.png")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
+            _textureEffect = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.gloss_negx.jpg")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
             _textureEffectView = _graphicsDevice.ResourceFactory.CreateTextureView(_textureEffect);
             _linearSampler = graphicsDevice.LinearSampler;
             _pointSampler = graphicsDevice.PointSampler;
@@ -171,8 +177,8 @@ namespace VeldridNSViewExample.Render
             const float lightIntensity = 2.0f;
             var lightColor = new Vector3(lightIntensity, lightIntensity, lightIntensity);
 
-            commandList.UpdateBuffer(_diffuseColorBuffer, 0, new Vector4(1, 1, 1, 1));
-            commandList.UpdateBuffer(_useTextureDiffuse, 0, 1);
+            commandList.UpdateBuffer(_diffuseColorBuffer, 0, new Vector4(0.5f, 0.1f, 0.1f, 1));
+            commandList.UpdateBuffer(_useTextureDiffuse, 0, 0);
             commandList.UpdateBuffer(_useTextureBumpmap, 0, 1);
             commandList.UpdateBuffer(_useTextureEffect, 0, 1);
             commandList.UpdateBuffer(_effect, 0, lightDirection);
@@ -189,7 +195,7 @@ namespace VeldridNSViewExample.Render
             commandList.SetIndexBuffer(indexBuffer, IndexFormat.UInt16);
             commandList.SetGraphicsResourceSet(0, _outputVertSet);
             commandList.SetGraphicsResourceSet(1, _outputFragSet);
-            commandList.DrawIndexed(36, 1, 0, 0, 0);
+            commandList.DrawIndexed(72, 1, 0, 0, 0);
         }
     }
 }

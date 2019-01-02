@@ -24,5 +24,10 @@ namespace VeldridNSViewExample.Render
             string name = $"VeldridNSViewExample.Shaders.{set}.{stage.ToString().Substring(0, 4).ToLower()}.spv";
             return new ShaderDescription(stage, ResourceLoader.GetEmbeddedResourceBytes(name), entryPoint);
         }
+
+        public virtual void Resize()
+        {
+
+        }
     }
 }

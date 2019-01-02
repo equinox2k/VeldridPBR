@@ -12,15 +12,10 @@ namespace VeldridNSViewExample.Render
         private readonly Camera _camera;
         private readonly GraphicsDevice _graphicsDevice;
         private readonly Framebuffer _framebuffer;
-
         private readonly DeviceBuffer _opacityBuffer;
         private readonly DeviceBuffer _skyboxDiffuseBuffer;
         private readonly DeviceBuffer _inverseModelViewMatrixBuffer;
         private readonly DeviceBuffer _inverseProjectionMatrixBuffer;
-
-
-
-        private readonly Sampler _linearSampler;
         private readonly ResourceSet _outputVertSet0;
         private readonly ResourceSet _outputFragSet1;
         private readonly ResourceLayout _outputFragLayout2;
@@ -36,7 +31,6 @@ namespace VeldridNSViewExample.Render
             _skyboxDiffuseBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _inverseModelViewMatrixBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
             _inverseProjectionMatrixBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
-            _linearSampler = graphicsDevice.LinearSampler;
 
             var textureEnvSkybox = LoadCube("irradiance").CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory);
             var textureEnvSkyboxView = _graphicsDevice.ResourceFactory.CreateTextureView(textureEnvSkybox);
@@ -81,7 +75,7 @@ namespace VeldridNSViewExample.Render
                 _opacityBuffer,
                 _skyboxDiffuseBuffer,
                 textureEnvSkyboxView,
-                _linearSampler));
+                graphicsDevice.LinearSampler));
         }
 
         public void Update(CommandList commandList, DeviceBuffer vertexBuffer, DeviceBuffer indexBuffer, Texture diffuseTexture, Texture textureAmbientOcclusion)

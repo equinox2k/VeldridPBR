@@ -9,6 +9,5 @@ void main()
 {
     oTexCoord = vec2(iTexCoord.x, 1.0 - iTexCoord.y);
     gl_Position = vec4(iPosition, 1.0);
-    //gl_Position.y = -gl_Position.y;
 }
 
