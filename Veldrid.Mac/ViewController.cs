@@ -2,14 +2,8 @@
 using AppKit;
 using Foundation;
 using Veldrid;
-using Veldrid.Mac;
-using Veldrid.SPIRV;
 using System.Numerics;
-using Veldrid.ImageSharp;
-using SixLabors.ImageSharp;
 using VeldridNSViewExample.Render;
-using SixLabors.ImageSharp.PixelFormats;
-using System.Collections.Generic;
 
 namespace VeldridNSViewExample
 {

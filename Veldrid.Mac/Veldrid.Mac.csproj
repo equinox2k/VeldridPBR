@@ -192,7 +192,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ThreeDee\brdf.png" />
-    <EmbeddedResource Include="ThreeDee\fullFloatEnvironmentBrdf.png" />
     <EmbeddedResource Include="ThreeDee\gloss_negx.jpg" />
     <EmbeddedResource Include="ThreeDee\gloss_negy.jpg" />
     <EmbeddedResource Include="ThreeDee\gloss_negz.jpg" />
