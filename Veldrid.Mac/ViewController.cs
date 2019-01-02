@@ -49,7 +49,7 @@ namespace VeldridNSViewExample
     }
 
     [Register("ViewController")]
-    public class ViewController : NSSplitViewController
+    public class ViewController : NSViewController
     {
 
         private Camera _camera;
@@ -202,7 +202,7 @@ namespace VeldridNSViewExample
 
         private static Vertex[] GetCubeVertices()
         {
-            var vertices = new Vertex[]
+            return new Vertex[]
             {
                 // Top
                 new Vertex(new Vector3(-0.5f, -0.5f, -0.5f), new Vector2(0, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
@@ -235,26 +235,6 @@ namespace VeldridNSViewExample
                 new Vertex(new Vector3(+0.5f, +0.5f, +0.5f), new Vector2(1, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
                 new Vertex(new Vector3(-0.5f, +0.5f, +0.5f), new Vector2(0, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0))
             };
-
-            var tvertices = new List<Vertex>();
-            for (var i = 0; i < vertices.Length; i++)
-            {
-                var vertex = vertices[i];
-                var tvertex = new Vertex();
-                tvertex.PositionX = (vertex.PositionX * 1);
-                tvertex.PositionY = (vertex.PositionY * 1);
-                tvertex.PositionZ = (vertex.PositionZ * 1);
-                tvertex.TexCoordX = vertex.TexCoordX;
-                tvertex.TexCoordY = vertex.TexCoordY;
-                tvertex.NormalX = vertex.NormalX;
-                tvertex.NormalY = vertex.NormalY;
-                tvertex.NormalZ = vertex.NormalZ;
-                tvertex.TangentX = vertex.TangentX;
-                tvertex.TangentY = vertex.TangentY;
-                tvertex.TangentZ = vertex.TangentZ;
-                tvertices.Add(tvertex);
-            }
-            return tvertices.ToArray();
         }
 
         private static ushort[] GetCubeIndices()
