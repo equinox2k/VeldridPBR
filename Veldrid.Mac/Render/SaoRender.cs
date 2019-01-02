@@ -113,30 +113,31 @@ namespace VeldridNSViewExample.Render
 
         public void Update(CommandList commandList, DeviceBuffer vertexBuffer, DeviceBuffer indexBuffer, Texture depthNormalTexture)
         {
-            var outputFragSet1 = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
+            using (var outputFragSet1 = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
                 _outputFragLayout1,
-                _graphicsDevice.ResourceFactory.CreateTextureView(depthNormalTexture)));
+                _graphicsDevice.ResourceFactory.CreateTextureView(depthNormalTexture))))
+            {
+                commandList.UpdateBuffer(_cameraNearBuffer, 0, _camera.Near);
+                commandList.UpdateBuffer(_cameraFarBuffer, 0, _camera.Far);
+                commandList.UpdateBuffer(_projectionMatrixBuffer, 0, _camera.ProjectionMatrix);
+                commandList.UpdateBuffer(_inverseProjectionMatrixBuffer, 0, _camera.InverseProjectionMatrix);
+                commandList.UpdateBuffer(_scaleBuffer, 0, 2.0f);
+                commandList.UpdateBuffer(_intensityBuffer, 0, 0.1f);
+                commandList.UpdateBuffer(_biasBuffer, 0, 0.5f);
+                commandList.UpdateBuffer(_kernalRadiusBuffer, 0, 10.0f);
+                commandList.UpdateBuffer(_minResolutionBuffer, 0, 0.01f);
+                commandList.UpdateBuffer(_sizeBuffer, 0, new Vector2(_camera.Width, _camera.Height));
+                commandList.UpdateBuffer(_seedBuffer, 0, _seedValue);
 
-            commandList.UpdateBuffer(_cameraNearBuffer, 0, _camera.Near);
-            commandList.UpdateBuffer(_cameraFarBuffer, 0, _camera.Far);
-            commandList.UpdateBuffer(_projectionMatrixBuffer, 0, _camera.ProjectionMatrix);
-            commandList.UpdateBuffer(_inverseProjectionMatrixBuffer, 0, _camera.InverseProjectionMatrix);
-            commandList.UpdateBuffer(_scaleBuffer, 0, 1.0f);
-            commandList.UpdateBuffer(_intensityBuffer, 0, 0.01f);
-            commandList.UpdateBuffer(_biasBuffer, 0, 0.5f);
-            commandList.UpdateBuffer(_kernalRadiusBuffer, 0, 10.0f);
-            commandList.UpdateBuffer(_minResolutionBuffer, 0, 0.01f);
-            commandList.UpdateBuffer(_sizeBuffer, 0, new Vector2(_camera.Width, _camera.Height));
-            commandList.UpdateBuffer(_seedBuffer, 0, _seedValue);
-
-            commandList.SetFramebuffer(_framebuffer);
-            commandList.ClearDepthStencil(1f);
-            commandList.SetPipeline(_pipeline);
-            commandList.SetVertexBuffer(0, vertexBuffer);
-            commandList.SetIndexBuffer(indexBuffer, IndexFormat.UInt16);
-            commandList.SetGraphicsResourceSet(0, _outputFragSet0);
-            commandList.SetGraphicsResourceSet(1, outputFragSet1);
-            commandList.DrawIndexed(6, 1, 0, 0, 0);
+                commandList.SetFramebuffer(_framebuffer);
+                commandList.ClearDepthStencil(1f);
+                commandList.SetPipeline(_pipeline);
+                commandList.SetVertexBuffer(0, vertexBuffer);
+                commandList.SetIndexBuffer(indexBuffer, IndexFormat.UInt16);
+                commandList.SetGraphicsResourceSet(0, _outputFragSet0);
+                commandList.SetGraphicsResourceSet(1, outputFragSet1);
+                commandList.DrawIndexed(6, 1, 0, 0, 0);
+            }
         }
     }
 }

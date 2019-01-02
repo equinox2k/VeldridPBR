@@ -32,8 +32,9 @@ void main()
     albedoSkybox = max(albedoSkybox, 0.0) * uSkyboxDiffuse; 
    
     vec4 albedo = texture(sampler2D(TextureDiffuse, LinearSampler), iTexCoord.st);
-    vec3 ambientOcclusion = texture(sampler2D(TextureAmbientOcclusion, LinearSampler), iTexCoord.st).rgb;
-    albedo = vec4(albedo.rgb * ambientOcclusion, albedo.a * uOpacity);
+    albedo = vec4(albedo.rgb, albedo.a * uOpacity);
     
-    oFragColor = vec4((albedoSkybox.rgb * (1.0 - albedo.a)) + albedo.rgb, albedoSkybox.a);
+    vec4 result = vec4((albedoSkybox.rgb * (1.0 - albedo.a)) + albedo.rgb, albedoSkybox.a);
+    vec4 ambientOcclusion = texture(sampler2D(TextureAmbientOcclusion, LinearSampler), vec2(iTexCoord.x, 1.0 - iTexCoord.y));
+    oFragColor = vec4(result * ambientOcclusion);
 }

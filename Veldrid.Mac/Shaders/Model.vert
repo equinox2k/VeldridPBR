@@ -38,5 +38,4 @@ void main()
     oNormal = normalW;
     oVertexPosition = iPosition;
     gl_Position = (uProjectionMatrix * uViewMatrix) * position;
-    gl_Position.y = -gl_Position.y;
 }

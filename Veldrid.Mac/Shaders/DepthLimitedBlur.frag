@@ -63,7 +63,7 @@ vec3 DecodeViewNormalStereo(vec4 enc4)
 }
 
 float getDepth(vec2 screenPosition) {
-    vec4 textureColor = texture(sampler2D(TextureDepthNormal, PointSampler), screenPosition);
+    vec4 textureColor = texture(sampler2D(TextureDepthNormal, PointSampler), vec2(screenPosition.x, 1.0 - screenPosition.y));
     return DecodeFloatRG(textureColor.zw);
 }
 

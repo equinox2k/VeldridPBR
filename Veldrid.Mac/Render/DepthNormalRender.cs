@@ -86,7 +86,7 @@ namespace VeldridNSViewExample.Render
             commandList.SetVertexBuffer(0, vertexBuffer);
             commandList.SetIndexBuffer(indexBuffer, IndexFormat.UInt16);
             commandList.SetGraphicsResourceSet(0, _outputVertSet);
-            commandList.DrawIndexed(72, 1, 0, 0, 0);
+            commandList.DrawIndexed(36, 1, 0, 0, 0);
         }
     }
 }

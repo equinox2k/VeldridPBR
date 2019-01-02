@@ -15,6 +15,7 @@ namespace VeldridNSViewExample.Render
 
         private readonly GraphicsDevice _graphicsDevice;
         private readonly Camera _camera;
+        private readonly DeviceBuffer _flipyBuffer;
         private readonly DeviceBuffer _sizeBuffer;
         private readonly DeviceBuffer _cameraNearBuffer;
         private readonly DeviceBuffer _cameraFarBuffer;
@@ -71,6 +72,7 @@ namespace VeldridNSViewExample.Render
 
             Resize();
 
+            _flipyBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _sizeBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _cameraNearBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _cameraFarBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
@@ -127,28 +129,29 @@ namespace VeldridNSViewExample.Render
 
         public void Update(CommandList commandList, DeviceBuffer vertexBuffer, DeviceBuffer indexBuffer, Texture depthNormalTexture, Texture diffuseTexture, bool verticalPass)
         {
-            var outputFragSet2 = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
+            using (var outputFragSet2 = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
                 _outputFragLayout2,
                 _graphicsDevice.ResourceFactory.CreateTextureView(depthNormalTexture),
-                _graphicsDevice.ResourceFactory.CreateTextureView(diffuseTexture)));
+                _graphicsDevice.ResourceFactory.CreateTextureView(diffuseTexture))))
+            {
+                commandList.UpdateBuffer(_sizeBuffer, 0, new Vector2(_camera.Width, _camera.Height));
+                commandList.UpdateBuffer(_cameraNearBuffer, 0, _camera.Near);
+                commandList.UpdateBuffer(_cameraFarBuffer, 0, _camera.Far);
+                commandList.UpdateBuffer(_depthCutOffBuffer, 0, 0.01f);
+                commandList.UpdateBuffer(_sampleUvOffsetsBuffer, 0, verticalPass ? OffsetsVert : OffsetsHoriz);
+                commandList.UpdateBuffer(_sampleWeightsBuffer, 0, Weights);
 
-            commandList.UpdateBuffer(_sizeBuffer, 0, new Vector2(_camera.Width, _camera.Height));
-            commandList.UpdateBuffer(_cameraNearBuffer, 0, _camera.Near);
-            commandList.UpdateBuffer(_cameraFarBuffer, 0, _camera.Far);
-            commandList.UpdateBuffer(_depthCutOffBuffer, 0, 0.01f);
-            commandList.UpdateBuffer(_sampleUvOffsetsBuffer, 0, verticalPass ? OffsetsVert : OffsetsHoriz);
-            commandList.UpdateBuffer(_sampleWeightsBuffer, 0, Weights);
-
-            commandList.SetFramebuffer(_framebuffer);
-            commandList.ClearColorTarget(0, RgbaFloat.Clear);
-            commandList.ClearDepthStencil(1f);
-            commandList.SetPipeline(_pipeline);
-            commandList.SetVertexBuffer(0, vertexBuffer);
-            commandList.SetIndexBuffer(indexBuffer, IndexFormat.UInt16);
-            commandList.SetGraphicsResourceSet(0, _outputVertSet0);
-            commandList.SetGraphicsResourceSet(1, _outputFragSet1);
-            commandList.SetGraphicsResourceSet(2, outputFragSet2);
-            commandList.DrawIndexed(6, 1, 0, 0, 0);
+                commandList.SetFramebuffer(_framebuffer);
+                commandList.ClearColorTarget(0, RgbaFloat.Clear);
+                commandList.ClearDepthStencil(1f);
+                commandList.SetPipeline(_pipeline);
+                commandList.SetVertexBuffer(0, vertexBuffer);
+                commandList.SetIndexBuffer(indexBuffer, IndexFormat.UInt16);
+                commandList.SetGraphicsResourceSet(0, _outputVertSet0);
+                commandList.SetGraphicsResourceSet(1, _outputFragSet1);
+                commandList.SetGraphicsResourceSet(2, outputFragSet2);
+                commandList.DrawIndexed(6, 1, 0, 0, 0);
+            }
         }
     }
 }

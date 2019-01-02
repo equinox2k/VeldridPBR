@@ -80,26 +80,27 @@ namespace VeldridNSViewExample.Render
 
         public void Update(CommandList commandList, DeviceBuffer vertexBuffer, DeviceBuffer indexBuffer, Texture diffuseTexture, Texture textureAmbientOcclusion)
         {
-            var outputFragSet2 = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
+            using (var outputFragSet2 = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
                 _outputFragLayout2,
                 _graphicsDevice.ResourceFactory.CreateTextureView(diffuseTexture),
-                _graphicsDevice.ResourceFactory.CreateTextureView(textureAmbientOcclusion)));
-           
-            commandList.UpdateBuffer(_opacityBuffer, 0, 1.0f);
-            commandList.UpdateBuffer(_skyboxDiffuseBuffer, 0, new Vector4(0.2f, 0.2f, 0.2f, 1));
-            commandList.UpdateBuffer(_inverseModelViewMatrixBuffer, 0, _camera.InverseModelViewMatrix);
-            commandList.UpdateBuffer(_inverseProjectionMatrixBuffer, 0, _camera.InverseProjectionMatrix);
-  
-            commandList.SetFramebuffer(_framebuffer);
-            commandList.ClearColorTarget(0, RgbaFloat.Clear);
-            commandList.ClearDepthStencil(1f);
-            commandList.SetPipeline(_pipeline);
-            commandList.SetVertexBuffer(0, vertexBuffer);
-            commandList.SetIndexBuffer(indexBuffer, IndexFormat.UInt16);
-            commandList.SetGraphicsResourceSet(0, _outputVertSet0);
-            commandList.SetGraphicsResourceSet(1, _outputFragSet1);
-            commandList.SetGraphicsResourceSet(2, outputFragSet2);
-            commandList.DrawIndexed(6, 1, 0, 0, 0);
+                _graphicsDevice.ResourceFactory.CreateTextureView(textureAmbientOcclusion))))
+            {
+                commandList.UpdateBuffer(_opacityBuffer, 0, 1.0f);
+                commandList.UpdateBuffer(_skyboxDiffuseBuffer, 0, new Vector4(0.8f, 0.8f, 0.8f, 1));
+                commandList.UpdateBuffer(_inverseModelViewMatrixBuffer, 0, _camera.InverseModelViewMatrix);
+                commandList.UpdateBuffer(_inverseProjectionMatrixBuffer, 0, _camera.InverseProjectionMatrix);
+
+                commandList.SetFramebuffer(_framebuffer);
+                commandList.ClearColorTarget(0, RgbaFloat.Clear);
+                commandList.ClearDepthStencil(1f);
+                commandList.SetPipeline(_pipeline);
+                commandList.SetVertexBuffer(0, vertexBuffer);
+                commandList.SetIndexBuffer(indexBuffer, IndexFormat.UInt16);
+                commandList.SetGraphicsResourceSet(0, _outputVertSet0);
+                commandList.SetGraphicsResourceSet(1, _outputFragSet1);
+                commandList.SetGraphicsResourceSet(2, outputFragSet2);
+                commandList.DrawIndexed(6, 1, 0, 0, 0);
+            }
         }
     }
 }

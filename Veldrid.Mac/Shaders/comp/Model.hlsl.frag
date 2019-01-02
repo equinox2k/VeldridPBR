@@ -56,7 +56,6 @@ void vert_main()
     oNormal = normalW;
     oVertexPosition = iPosition;
     gl_Position = mul(position, mul(_142_uViewMatrix, _137_uProjectionMatrix));
-    gl_Position.y = -gl_Position.y;
     gl_Position.x = gl_Position.x - gl_HalfPixel.x * gl_Position.w;
     gl_Position.y = gl_Position.y + gl_HalfPixel.y * gl_Position.w;
 }

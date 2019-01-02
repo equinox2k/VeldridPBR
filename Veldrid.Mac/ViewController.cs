@@ -107,7 +107,7 @@ namespace VeldridNSViewExample
         {
             _camera = new Camera
             {
-                Eye = new Vector3(0, 0, 15.0f)
+                Eye = new Vector3(0, 0, 5.0f)
             };
 
             _commandList = resourceFactory.CreateCommandList();
@@ -174,27 +174,27 @@ namespace VeldridNSViewExample
 
             _commandList.Begin();
 
+            // Render depth + model
+
             _depthNormalRender.Update(_commandList, _vertexBuffer, _indexBuffer);
-
             var depthNormalTexture = _depthNormalRender.GetColorTarget();
-
-            _saoRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, depthNormalTexture);
+            _saoRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, _depthNormalRender.GetColorTarget());
             _modelRender.Update(_commandList, _vertexBuffer, _indexBuffer);
 
-            var saoTexture = _saoRender.GetColorTarget();
+            // Blur Sao
 
-            _depthLimitedBlurRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, depthNormalTexture, saoTexture, true);
+            _depthLimitedBlurRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, depthNormalTexture, _saoRender.GetColorTarget(), false);
+            using (var blurHorizontalSao = _veldridView.GraphicsDevice.ResourceFactory.CreateTexture(TextureDescription.Texture2D(_camera.Width, _camera.Height, 1, 1, PixelFormat.R32_G32_B32_A32_Float, TextureUsage.Sampled)))
+            {
+                _commandList.CopyTexture(_depthLimitedBlurRender.GetColorTarget(), blurHorizontalSao);
+                _depthLimitedBlurRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, depthNormalTexture, blurHorizontalSao, true);
+            }
 
-            var blurHorizontalSao = _depthLimitedBlurRender.GetColorTarget();
+            // Render Output with skybox
 
-          //  _depthLimitedBlurRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, depthNormalTexture, blurHorizontalSao, true);
+            _outputRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, _modelRender.GetColorTarget(), _depthLimitedBlurRender.GetColorTarget()); 
 
-            var blurSao = _depthLimitedBlurRender.GetColorTarget();
-            var diffuseTexture = _modelRender.GetColorTarget();
-
-            _outputRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, diffuseTexture, blurSao);
-           
-             _commandList.End();
+            _commandList.End();
 
             _veldridView.GraphicsDevice.SubmitCommands(_commandList);
             _veldridView.GraphicsDevice.SwapBuffers(_veldridView.MainSwapchain);
@@ -205,59 +205,55 @@ namespace VeldridNSViewExample
             var vertices = new Vertex[]
             {
                 // Top
-                new Vertex(new Vector3(-0.5f, +0.5f, -0.5f), new Vector2(0, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                new Vertex(new Vector3(+0.5f, +0.5f, -0.5f), new Vector2(1, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                new Vertex(new Vector3(+0.5f, +0.5f, +0.5f), new Vector2(1, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                new Vertex(new Vector3(-0.5f, +0.5f, +0.5f), new Vector2(0, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                // Bottom                                                             
-                new Vertex(new Vector3(-0.5f,-0.5f, +0.5f),  new Vector2(0, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                new Vertex(new Vector3(+0.5f,-0.5f, +0.5f),  new Vector2(1, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                new Vertex(new Vector3(+0.5f,-0.5f, -0.5f),  new Vector2(1, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                new Vertex(new Vector3(-0.5f,-0.5f, -0.5f),  new Vector2(0, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                // Left                                                               
-                new Vertex(new Vector3(-0.5f, +0.5f, -0.5f), new Vector2(0, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                new Vertex(new Vector3(-0.5f, +0.5f, +0.5f), new Vector2(1, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                new Vertex(new Vector3(-0.5f, -0.5f, +0.5f), new Vector2(1, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                new Vertex(new Vector3(-0.5f, -0.5f, -0.5f), new Vector2(0, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                // Right                                                              
-                new Vertex(new Vector3(+0.5f, +0.5f, +0.5f), new Vector2(0, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                new Vertex(new Vector3(+0.5f, +0.5f, -0.5f), new Vector2(1, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                new Vertex(new Vector3(+0.5f, -0.5f, -0.5f), new Vector2(1, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                new Vertex(new Vector3(+0.5f, -0.5f, +0.5f), new Vector2(0, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                // Back                                                               
-                new Vertex(new Vector3(+0.5f, +0.5f, -0.5f), new Vector2(0, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                new Vertex(new Vector3(-0.5f, +0.5f, -0.5f), new Vector2(1, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                new Vertex(new Vector3(-0.5f, -0.5f, -0.5f), new Vector2(1, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                new Vertex(new Vector3(+0.5f, -0.5f, -0.5f), new Vector2(0, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                // Front                                                              
-                new Vertex(new Vector3(-0.5f, +0.5f, +0.5f), new Vector2(0, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                new Vertex(new Vector3(+0.5f, +0.5f, +0.5f), new Vector2(1, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                new Vertex(new Vector3(-0.5f, -0.5f, -0.5f), new Vector2(0, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                new Vertex(new Vector3(+0.5f, -0.5f, -0.5f), new Vector2(1, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
                 new Vertex(new Vector3(+0.5f, -0.5f, +0.5f), new Vector2(1, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
-                new Vertex(new Vector3(-0.5f, -0.5f, +0.5f), new Vector2(0, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0))
+                new Vertex(new Vector3(-0.5f, -0.5f, +0.5f), new Vector2(0, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                // Bottom                                                             
+                new Vertex(new Vector3(-0.5f,+0.5f, +0.5f),  new Vector2(0, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                new Vertex(new Vector3(+0.5f,+0.5f, +0.5f),  new Vector2(1, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                new Vertex(new Vector3(+0.5f,+0.5f, -0.5f),  new Vector2(1, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                new Vertex(new Vector3(-0.5f,+0.5f, -0.5f),  new Vector2(0, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                // Left                                                               
+                new Vertex(new Vector3(-0.5f, -0.5f, -0.5f), new Vector2(0, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                new Vertex(new Vector3(-0.5f, -0.5f, +0.5f), new Vector2(1, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                new Vertex(new Vector3(-0.5f, +0.5f, +0.5f), new Vector2(1, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                new Vertex(new Vector3(-0.5f, +0.5f, -0.5f), new Vector2(0, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                // Right                                                              
+                new Vertex(new Vector3(+0.5f, -0.5f, +0.5f), new Vector2(0, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                new Vertex(new Vector3(+0.5f, -0.5f, -0.5f), new Vector2(1, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                new Vertex(new Vector3(+0.5f, +0.5f, -0.5f), new Vector2(1, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                new Vertex(new Vector3(+0.5f, +0.5f, +0.5f), new Vector2(0, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                // Back                                                               
+                new Vertex(new Vector3(+0.5f, -0.5f, -0.5f), new Vector2(0, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                new Vertex(new Vector3(-0.5f, -0.5f, -0.5f), new Vector2(1, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                new Vertex(new Vector3(-0.5f, +0.5f, -0.5f), new Vector2(1, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                new Vertex(new Vector3(+0.5f, +0.5f, -0.5f), new Vector2(0, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                // Front                                                              
+                new Vertex(new Vector3(-0.5f, -0.5f, +0.5f), new Vector2(0, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                new Vertex(new Vector3(+0.5f, -0.5f, +0.5f), new Vector2(1, 0), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                new Vertex(new Vector3(+0.5f, +0.5f, +0.5f), new Vector2(1, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0)),
+                new Vertex(new Vector3(-0.5f, +0.5f, +0.5f), new Vector2(0, 1), new Vector3(0, 0, 1), new Vector3(1, 0, 0))
             };
 
             var tvertices = new List<Vertex>();
-            for (var j = 0; j < 2; j++)
+            for (var i = 0; i < vertices.Length; i++)
             {
-                for (var i = 0; i < vertices.Length; i++)
-                {
-                    var vertex = vertices[i];
-                    var tvertex = new Vertex();
-                    tvertex.PositionX = (vertex.PositionX * 5) + (j * 0.25f);
-                    tvertex.PositionY = (vertex.PositionY * 5) + (j * 1.25f);
-                    tvertex.PositionZ = (vertex.PositionZ * 5);
-                    tvertex.TexCoordX = vertex.TexCoordX;
-                    tvertex.TexCoordY = vertex.TexCoordY;
-                    tvertex.NormalX = vertex.NormalX;
-                    tvertex.NormalY = vertex.NormalY;
-                    tvertex.NormalZ = vertex.NormalZ;
-                    tvertex.TangentX = vertex.TangentX;
-                    tvertex.TangentY = vertex.TangentY;
-                    tvertex.TangentZ = vertex.TangentZ;
-                    tvertices.Add(tvertex);
-                }
+                var vertex = vertices[i];
+                var tvertex = new Vertex();
+                tvertex.PositionX = (vertex.PositionX * 1);
+                tvertex.PositionY = (vertex.PositionY * 1);
+                tvertex.PositionZ = (vertex.PositionZ * 1);
+                tvertex.TexCoordX = vertex.TexCoordX;
+                tvertex.TexCoordY = vertex.TexCoordY;
+                tvertex.NormalX = vertex.NormalX;
+                tvertex.NormalY = vertex.NormalY;
+                tvertex.NormalZ = vertex.NormalZ;
+                tvertex.TangentX = vertex.TangentX;
+                tvertex.TangentY = vertex.TangentY;
+                tvertex.TangentZ = vertex.TangentZ;
+                tvertices.Add(tvertex);
             }
-
             return tvertices.ToArray();
         }
 
@@ -272,18 +268,7 @@ namespace VeldridNSViewExample
                 16,17,18, 16,18,19,
                 20,21,22, 20,22,23,
             };
-
-            var tindices = new List<ushort>();
-            for (var j = 0; j < 2; j++)
-            {
-                for (var i = 0; i < indices.Length; i++)
-                {
-                    var index = indices[i] + (j * 24);
-                    tindices.Add((ushort)index);
-                }
-            }
-
-            return tindices.ToArray();
+            return indices;
         }
 
 
