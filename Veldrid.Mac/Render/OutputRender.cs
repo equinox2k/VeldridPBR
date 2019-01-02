@@ -32,7 +32,7 @@ namespace VeldridNSViewExample.Render
             _inverseModelViewMatrixBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
             _inverseProjectionMatrixBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
 
-            var textureEnvSkybox = LoadCube("irradiance").CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory);
+            var textureEnvSkybox = LoadCube("skybox").CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory);
             var textureEnvSkyboxView = _graphicsDevice.ResourceFactory.CreateTextureView(textureEnvSkybox);
 
             var modelShaders = graphicsDevice.ResourceFactory.CreateFromSpirv(LoadShader("Output", ShaderStages.Vertex, "main"), LoadShader("Output", ShaderStages.Fragment, "main"));
