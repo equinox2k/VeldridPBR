@@ -173,7 +173,5 @@ void main() {
     float centerViewZ = getViewZ(centerDepth);
     vec3 viewPosition = getViewPosition(iTexCoord, centerDepth, centerViewZ);
     float ambientOcclusion = getAmbientOcclusion(viewPosition);
-   //oFragColor = vec4(vec3(1.0) * (1.0 - ambientOcclusion), 1.0);
-    oFragColor = vec4(uCameraNear, uCameraNear, uCameraNear, 1.0);
+    oFragColor = vec4(vec3(1.0) * (1.0 - ambientOcclusion), 1.0);
 }
-

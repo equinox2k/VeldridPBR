@@ -125,7 +125,7 @@ namespace VeldridNSViewExample.Render
                 _graphicsDevice.PointSampler));
         }
 
-        public void Update(CommandList commandList, DeviceBuffer vertexBuffer, DeviceBuffer indexBuffer, Texture depthNormalTexture, Texture diffuseTexture)
+        public void Update(CommandList commandList, DeviceBuffer vertexBuffer, DeviceBuffer indexBuffer, Texture depthNormalTexture, Texture diffuseTexture, bool verticalPass)
         {
             var outputFragSet2 = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
                 _outputFragLayout2,
@@ -136,7 +136,7 @@ namespace VeldridNSViewExample.Render
             commandList.UpdateBuffer(_cameraNearBuffer, 0, _camera.Near);
             commandList.UpdateBuffer(_cameraFarBuffer, 0, _camera.Far);
             commandList.UpdateBuffer(_depthCutOffBuffer, 0, 0.01f);
-            commandList.UpdateBuffer(_sampleUvOffsetsBuffer, 0, OffsetsHoriz);
+            commandList.UpdateBuffer(_sampleUvOffsetsBuffer, 0, verticalPass ? OffsetsVert : OffsetsHoriz);
             commandList.UpdateBuffer(_sampleWeightsBuffer, 0, Weights);
 
             commandList.SetFramebuffer(_framebuffer);

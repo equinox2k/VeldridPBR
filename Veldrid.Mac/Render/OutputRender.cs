@@ -86,7 +86,7 @@ namespace VeldridNSViewExample.Render
                 _graphicsDevice.ResourceFactory.CreateTextureView(textureAmbientOcclusion)));
            
             commandList.UpdateBuffer(_opacityBuffer, 0, 1.0f);
-            commandList.UpdateBuffer(_skyboxDiffuseBuffer, 0, new Vector4(0.8f, 0.8f, 0.8f, 1));
+            commandList.UpdateBuffer(_skyboxDiffuseBuffer, 0, new Vector4(0.2f, 0.2f, 0.2f, 1));
             commandList.UpdateBuffer(_inverseModelViewMatrixBuffer, 0, _camera.InverseModelViewMatrix);
             commandList.UpdateBuffer(_inverseProjectionMatrixBuffer, 0, _camera.InverseProjectionMatrix);
   

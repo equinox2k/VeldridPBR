@@ -181,11 +181,11 @@ namespace VeldridNSViewExample.Render
             commandList.UpdateBuffer(_useTextureDiffuse, 0, 0);
             commandList.UpdateBuffer(_useTextureBumpmap, 0, 1);
             commandList.UpdateBuffer(_useTextureEffect, 0, 1);
-            commandList.UpdateBuffer(_effect, 0, lightDirection);
-            commandList.UpdateBuffer(_lightDirection, 0, new Vector3(0, 0, 1));
+            commandList.UpdateBuffer(_effect, 0, new Vector4());
+            commandList.UpdateBuffer(_lightDirection, 0, lightDirection);
             commandList.UpdateBuffer(_lightColor, 0, lightColor);
             commandList.UpdateBuffer(_metallicRoughnessValues, 0, new Vector2(0.5f, 0.5f));
-            commandList.UpdateBuffer(_cameraPosition, 0, new Vector4(0, 0, 2.5f, 0));
+            commandList.UpdateBuffer(_cameraPosition, 0, _camera.Eye);
 
             commandList.SetFramebuffer(_framebuffer);
             commandList.ClearColorTarget(0, RgbaFloat.Clear);

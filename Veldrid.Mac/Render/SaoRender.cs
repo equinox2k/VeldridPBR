@@ -121,7 +121,7 @@ namespace VeldridNSViewExample.Render
             commandList.UpdateBuffer(_cameraFarBuffer, 0, _camera.Far);
             commandList.UpdateBuffer(_projectionMatrixBuffer, 0, _camera.ProjectionMatrix);
             commandList.UpdateBuffer(_inverseProjectionMatrixBuffer, 0, _camera.InverseProjectionMatrix);
-            commandList.UpdateBuffer(_scaleBuffer, 0, 4.0f);
+            commandList.UpdateBuffer(_scaleBuffer, 0, 1.0f);
             commandList.UpdateBuffer(_intensityBuffer, 0, 0.01f);
             commandList.UpdateBuffer(_biasBuffer, 0, 0.5f);
             commandList.UpdateBuffer(_kernalRadiusBuffer, 0, 10.0f);

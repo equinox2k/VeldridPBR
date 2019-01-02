@@ -87,7 +87,7 @@ namespace VeldridNSViewExample
         {
             base.ViewDidLoad();
 
-            var graphicsDeviceOptions = new GraphicsDeviceOptions(false, PixelFormat.R16_UNorm, false, ResourceBindingModel.Improved, true, true);
+            var graphicsDeviceOptions = new GraphicsDeviceOptions(true, PixelFormat.R16_UNorm, false, ResourceBindingModel.Improved, true, true);
             _veldridView = new VeldridView(GraphicsBackend.Metal, graphicsDeviceOptions)
             {
                 TranslatesAutoresizingMaskIntoConstraints = false
@@ -107,7 +107,7 @@ namespace VeldridNSViewExample
         {
             _camera = new Camera
             {
-                Eye = new Vector3(0, 0, 5.0f)
+                Eye = new Vector3(0, 0, 15.0f)
             };
 
             _commandList = resourceFactory.CreateCommandList();
@@ -181,27 +181,18 @@ namespace VeldridNSViewExample
             _saoRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, depthNormalTexture);
             _modelRender.Update(_commandList, _vertexBuffer, _indexBuffer);
 
-
-
-
             var saoTexture = _saoRender.GetColorTarget();
 
+            _depthLimitedBlurRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, depthNormalTexture, saoTexture, true);
 
-            //var aaaa = new Image<Rgba32>(1000, 1000);
-            //var bbbb = new ImageSharpTexture(aaaa);
-            //var cccc = bbbb.CreateDeviceTexture(_veldridView.GraphicsDevice, _veldridView.GraphicsDevice.ResourceFactory);
+            var blurHorizontalSao = _depthLimitedBlurRender.GetColorTarget();
 
-            //_depthLimitedBlurRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, depthNormalTexture, saoTexture);
+          //  _depthLimitedBlurRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, depthNormalTexture, blurHorizontalSao, true);
 
-            //var blurSao = _depthLimitedBlurRender.GetColorTarget();
-            //_commandList.SetFramebuffer(_veldridView.MainSwapchain.Framebuffer);
-            //_commandList.ClearColorTarget(0, RgbaFloat.Grey);
-            //_commandList.ClearDepthStencil(1f);
-
-
+            var blurSao = _depthLimitedBlurRender.GetColorTarget();
             var diffuseTexture = _modelRender.GetColorTarget();
 
-            _outputRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, diffuseTexture, saoTexture);
+            _outputRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, diffuseTexture, blurSao);
            
              _commandList.End();
 
@@ -252,9 +243,9 @@ namespace VeldridNSViewExample
                 {
                     var vertex = vertices[i];
                     var tvertex = new Vertex();
-                    tvertex.PositionX = vertex.PositionX + (j * 0.25f);
-                    tvertex.PositionY = vertex.PositionY + (j * 1.25f);
-                    tvertex.PositionZ = vertex.PositionZ;
+                    tvertex.PositionX = (vertex.PositionX * 5) + (j * 0.25f);
+                    tvertex.PositionY = (vertex.PositionY * 5) + (j * 1.25f);
+                    tvertex.PositionZ = (vertex.PositionZ * 5);
                     tvertex.TexCoordX = vertex.TexCoordX;
                     tvertex.TexCoordY = vertex.TexCoordY;
                     tvertex.NormalX = vertex.NormalX;
