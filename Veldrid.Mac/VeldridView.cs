@@ -1,13 +1,22 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Text;
 using AppKit;
 using CoreVideo;
 using Veldrid;
+using Veldrid.OpenGL;
+using Veldrid.Sdl2;
 
 namespace VeldridNSViewExample
 {
     public class VeldridView : NSView
     {
+        private static NSOpenGLContext context;
+
+
+
+
         private readonly GraphicsBackend _backend;
         private readonly GraphicsDeviceOptions _deviceOptions;
 
@@ -56,7 +65,7 @@ namespace VeldridNSViewExample
             base.Dispose(disposing);
         }
 
-        public override void Layout()
+        public unsafe override void Layout()
         {
             base.Layout();
 
@@ -76,9 +85,54 @@ namespace VeldridNSViewExample
                 if (_backend == GraphicsBackend.Metal)
                 {
                     GraphicsDevice = GraphicsDevice.CreateMetal(_deviceOptions);
+                    MainSwapchain = GraphicsDevice.ResourceFactory.CreateSwapchain(swapchainDescription);
+
                 }
 
-                MainSwapchain = GraphicsDevice.ResourceFactory.CreateSwapchain(swapchainDescription);
+                if (_backend == GraphicsBackend.OpenGL)
+                {
+                    var pixelAttrs = new object[] {
+                            NSOpenGLPixelFormatAttribute.Accelerated,
+                            NSOpenGLPixelFormatAttribute.NoRecovery,
+                            NSOpenGLPixelFormatAttribute.DoubleBuffer,
+                            NSOpenGLPixelFormatAttribute.OpenGLProfile, NSOpenGLProfile.VersionLegacy,
+                            NSOpenGLPixelFormatAttribute.ColorSize, 24,
+                            NSOpenGLPixelFormatAttribute.AlphaSize, 8,
+                            NSOpenGLPixelFormatAttribute.DepthSize, 24,
+                            NSOpenGLPixelFormatAttribute.StencilSize, 8,
+                            NSOpenGLPixelFormatAttribute.Multisample,
+                            NSOpenGLPixelFormatAttribute.SampleBuffers, 1,
+                            NSOpenGLPixelFormatAttribute.Samples, 4
+                         };
+
+                    var pixelFormat = new NSOpenGLPixelFormat(pixelAttrs);
+
+                    context = new NSOpenGLContext(pixelFormat, null);
+                    context.MakeCurrentContext();
+
+                    //Veldrid.OpenGLBinding.OpenGLNative.LoadGetString(context.Handle, GetProcAddress);
+                    //Veldrid.OpenGLBinding.OpenGLNative.LoadAllFunctions(context.Handle, GetProcAddress, false);
+
+
+
+                    var platformInfo = new OpenGLPlatformInfo(
+                        context.Handle,
+                        GetProcAddress,
+                        MakeCurrent,
+                        GetCurrentContext,
+                        ClearCurrentContext,
+                        DeleteContext,
+                        SwapBuffers,
+                        SetSyncToVerticalBlank
+                    );
+
+                    GraphicsDevice = GraphicsDevice.CreateOpenGL(_deviceOptions, platformInfo, Width, Height);
+
+
+                    MainSwapchain = null;
+                    //MainSwapchain = GraphicsDevice.ResourceFactory.CreateSwapchain(swapchainDescription);
+
+                }
 
                 DeviceReady?.Invoke();
 
@@ -87,6 +141,99 @@ namespace VeldridNSViewExample
                 _displayLink.Start();
             }
         }
+
+        public static void MakeCurrent(IntPtr handle)
+        {
+            context.MakeCurrentContext();
+        }
+
+        public static IntPtr GetCurrentContext()
+        {
+            return NSOpenGLContext.CurrentContext.Handle;
+        }
+
+        public static void ClearCurrentContext()
+        {
+            NSOpenGLContext.ClearCurrentContext();
+        }
+
+        public static void DeleteContext(IntPtr ptr)
+        {
+            Debug.Print("DeleteContext");
+        }
+
+        public static void SwapBuffers()
+        {
+            Debug.Print("SwapBuffers");
+        }
+
+        public static void SetSyncToVerticalBlank(bool sync)
+        {
+            Debug.Print("SetSyncToVerticalBlank");
+        }
+
+        private const string Library = "libdl.dylib";
+
+        [DllImport(Library, EntryPoint = "NSIsSymbolNameDefined")]
+        private static extern bool NSIsSymbolNameDefined(string s);
+
+        [DllImport(Library, EntryPoint = "NSIsSymbolNameDefined")]
+        private static extern bool NSIsSymbolNameDefined(IntPtr s);
+
+        [DllImport(Library, EntryPoint = "NSLookupAndBindSymbol")]
+        private static extern IntPtr NSLookupAndBindSymbol(string s);
+
+        [DllImport(Library, EntryPoint = "NSLookupAndBindSymbol")]
+        private static extern IntPtr NSLookupAndBindSymbol(IntPtr s);
+
+        [DllImport(Library, EntryPoint = "NSAddressOfSymbol")]
+        private static extern IntPtr NSAddressOfSymbol(IntPtr symbol);
+
+        public static IntPtr GetProcAddress(string function)
+        {
+            // Instead of allocating and combining strings in managed memory
+            // we do that directly in unmanaged memory. This way, we avoid
+            // 2 string allocations every time this function is called.
+
+            // must add a '_' prefix and null-terminate the function name,
+            // hence we allocate +2 bytes
+            var ptr = Marshal.AllocHGlobal(function.Length + 2);
+            try
+            {
+                Marshal.WriteByte(ptr, (byte)'_');
+                for (var i = 0; i < function.Length; i++)
+                {
+                    Marshal.WriteByte(ptr, i + 1, (byte)function[i]);
+                }
+
+                Marshal.WriteByte(ptr, function.Length + 1, 0); // null-terminate
+
+                var symbol = GetAddress(ptr);
+                return symbol;
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(ptr);
+            }
+        }
+
+        public static IntPtr GetAddress(IntPtr function)
+        {
+            var symbol = IntPtr.Zero;
+            if (NSIsSymbolNameDefined(function))
+            {
+                symbol = NSLookupAndBindSymbol(function);
+                if (symbol != IntPtr.Zero)
+                {
+                    symbol = NSAddressOfSymbol(symbol);
+                }
+            }
+
+            return symbol;
+        }
+
+
+
 
         private CVReturn HandleDisplayLinkOutputCallback(CVDisplayLink displayLink, ref CVTimeStamp inNow, ref CVTimeStamp inOutputTime, CVOptionFlags flagsIn, ref CVOptionFlags flagsOut)
         {

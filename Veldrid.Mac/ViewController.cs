@@ -81,8 +81,8 @@ namespace VeldridNSViewExample
         {
             base.ViewDidLoad();
 
-            var graphicsDeviceOptions = new GraphicsDeviceOptions(true, PixelFormat.R16_UNorm, false, ResourceBindingModel.Improved, true, true);
-            _veldridView = new VeldridView(GraphicsBackend.Metal, graphicsDeviceOptions)
+            var graphicsDeviceOptions = new GraphicsDeviceOptions(true, PixelFormat.R32_Float, false, ResourceBindingModel.Improved, true, true);
+            _veldridView = new VeldridView(GraphicsBackend.OpenGL, graphicsDeviceOptions)
             {
                 TranslatesAutoresizingMaskIntoConstraints = false
             };
@@ -191,7 +191,8 @@ namespace VeldridNSViewExample
             _commandList.End();
 
             _veldridView.GraphicsDevice.SubmitCommands(_commandList);
-            _veldridView.GraphicsDevice.SwapBuffers(_veldridView.MainSwapchain);
+            //_veldridView.GraphicsDevice.SwapBuffers(_veldridView.MainSwapchain);
+            _veldridView.GraphicsDevice.SwapBuffers();
         }
 
         private static Vertex[] GetCubeVertices()
