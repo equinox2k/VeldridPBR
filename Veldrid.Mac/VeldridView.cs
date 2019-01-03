@@ -6,7 +6,6 @@ using AppKit;
 using CoreVideo;
 using Veldrid;
 using Veldrid.OpenGL;
-using Veldrid.Sdl2;
 
 namespace VeldridNSViewExample
 {
