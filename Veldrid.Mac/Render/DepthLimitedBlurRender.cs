@@ -15,7 +15,6 @@ namespace VeldridNSViewExample.Render
 
         private readonly GraphicsDevice _graphicsDevice;
         private readonly Camera _camera;
-        private readonly DeviceBuffer _flipyBuffer;
         private readonly DeviceBuffer _sizeBuffer;
         private readonly DeviceBuffer _cameraNearBuffer;
         private readonly DeviceBuffer _cameraFarBuffer;
@@ -72,7 +71,6 @@ namespace VeldridNSViewExample.Render
 
             Resize();
 
-            _flipyBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _sizeBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _cameraNearBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _cameraFarBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));

@@ -1,29 +1,38 @@
-#version 310 es
+#version 100
+#ifdef GL_ARB_shading_language_420pack
+#extension GL_ARB_shading_language_420pack : require
+#endif
 
-layout(binding = 0, std140) uniform ModelMatrix
+struct ModelMatrix
 {
     mat4 uModelMatrix;
-} _13;
+};
 
-layout(binding = 2, std140) uniform ProjectionMatrix
+uniform ModelMatrix _13;
+
+struct ProjectionMatrix
 {
     mat4 uProjectionMatrix;
-} _137;
+};
 
-layout(binding = 1, std140) uniform ViewMatrix
+uniform ProjectionMatrix _137;
+
+struct ViewMatrix
 {
     mat4 uViewMatrix;
-} _142;
+};
 
-layout(location = 0) in vec3 iPosition;
-layout(location = 0) out vec3 oPosition;
-layout(location = 1) out vec2 oTexCoord;
-layout(location = 1) in vec2 iTexCoord;
-layout(location = 2) in vec3 iNormal;
-layout(location = 3) in vec3 iTangent;
-layout(location = 3) out mat3 oTBN;
-layout(location = 2) out vec3 oNormal;
-layout(location = 6) out vec3 oVertexPosition;
+uniform ViewMatrix _142;
+
+attribute vec3 iPosition;
+varying vec3 oPosition;
+varying vec2 oTexCoord;
+attribute vec2 iTexCoord;
+attribute vec3 iNormal;
+attribute vec3 iTangent;
+varying mat3 oTBN;
+varying vec3 oNormal;
+varying vec3 oVertexPosition;
 
 void main()
 {

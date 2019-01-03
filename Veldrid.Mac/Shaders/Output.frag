@@ -36,5 +36,5 @@ void main()
     
     vec4 result = vec4((albedoSkybox.rgb * (1.0 - albedo.a)) + albedo.rgb, albedoSkybox.a);
     vec4 ambientOcclusion = texture(sampler2D(TextureAmbientOcclusion, LinearSampler), vec2(iTexCoord.x, 1.0 - iTexCoord.y));
-    oFragColor = vec4(result * ambientOcclusion);
+    oFragColor = result * ambientOcclusion;
 }
