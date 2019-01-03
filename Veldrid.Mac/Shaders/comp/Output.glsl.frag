@@ -36,6 +36,6 @@ void main()
     albedo = vec4(albedo.xyz, albedo.w * _83.uOpacity);
     vec4 result = vec4((albedoSkybox.xyz * (1.0 - albedo.w)) + albedo.xyz, albedoSkybox.w);
     vec4 ambientOcclusion = texture2D(SPIRV_Cross_CombinedTextureAmbientOcclusionLinearSampler, vec2(iTexCoord.x, 1.0 - iTexCoord.y));
-    gl_FragData[0] = vec4(result * ambientOcclusion);
+    gl_FragData[0] = result * ambientOcclusion;
 }
 
