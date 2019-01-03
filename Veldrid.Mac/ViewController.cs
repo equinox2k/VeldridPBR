@@ -130,7 +130,6 @@ namespace VeldridNSViewExample
             _modelRender = new ModelRender(_veldridView.GraphicsDevice, _camera, vertexLayoutDescription);
 
             _outputRender = new OutputRender(_veldridView.GraphicsDevice, _veldridView.MainSwapchain.Framebuffer, _camera, vertexLayoutDescription);
-
         }
 
         void VeldridView_DeviceReady()
@@ -178,23 +177,18 @@ namespace VeldridNSViewExample
 
             // Blur Sao
 
-            //_depthLimitedBlurRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, depthNormalTexture, _saoRender.GetColorTarget(), false);
-            //using (var blurHorizontalSao = _veldridView.GraphicsDevice.ResourceFactory.CreateTexture(TextureDescription.Texture2D(_camera.Width, _camera.Height, 1, 1, PixelFormat.R32_G32_B32_A32_Float, TextureUsage.Sampled)))
-            //{
-            //    _commandList.CopyTexture(_depthLimitedBlurRender.GetColorTarget(), blurHorizontalSao);
-            //    _depthLimitedBlurRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, depthNormalTexture, blurHorizontalSao, true);
-            //}
+            _depthLimitedBlurRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, depthNormalTexture, _saoRender.GetColorTarget(), false);
+            using (var blurHorizontalSao = _veldridView.GraphicsDevice.ResourceFactory.CreateTexture(TextureDescription.Texture2D(_camera.Width, _camera.Height, 1, 1, PixelFormat.R32_G32_B32_A32_Float, TextureUsage.Sampled)))
+            {
+                _commandList.CopyTexture(_depthLimitedBlurRender.GetColorTarget(), blurHorizontalSao);
+                _depthLimitedBlurRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, depthNormalTexture, blurHorizontalSao, true);
+            }
 
             // Render Output with skybox
 
-            //_outputRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, _modelRender.GetColorTarget(), _depthLimitedBlurRender.GetColorTarget());
-
-
-            _outputRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, _modelRender.GetColorTarget(), _modelRender.GetColorTarget());
-
+            _outputRender.Update(_commandList, _vertexMeshBuffer, _indexMeshBuffer, _modelRender.GetColorTarget(), _depthLimitedBlurRender.GetColorTarget());
 
             _commandList.End();
-
 
             _veldridView.GraphicsDevice.SubmitCommands(_commandList);
             _veldridView.GraphicsDevice.SwapBuffers();

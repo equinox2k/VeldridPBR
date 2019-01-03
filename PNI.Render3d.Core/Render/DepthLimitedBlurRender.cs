@@ -139,6 +139,7 @@ namespace PNI.Render3d.Core.Render
                 commandList.UpdateBuffer(_sampleWeightsBuffer, 0, Weights);
 
                 commandList.SetFramebuffer(_framebuffer);
+                commandList.ClearColorTarget(0, RgbaFloat.White);
                 commandList.ClearDepthStencil(1f);
                 commandList.SetPipeline(_pipeline);
                 commandList.SetVertexBuffer(0, vertexBuffer);
@@ -146,7 +147,7 @@ namespace PNI.Render3d.Core.Render
                 commandList.SetGraphicsResourceSet(0, _outputVertSet0);
                 commandList.SetGraphicsResourceSet(1, _outputFragSet1);
                 commandList.SetGraphicsResourceSet(2, outputFragSet2);
-                commandList.DrawIndexed(6, 1, 0, 0, 0);
+                //commandList.DrawIndexed(6, 1, 0, 0, 0);
             }
         }
     }

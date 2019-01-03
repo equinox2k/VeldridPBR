@@ -13,7 +13,6 @@ namespace VeldridNSViewExample
     {
         private static NSOpenGLContext context;
 
-
         private readonly GraphicsBackend _backend;
         private readonly GraphicsDeviceOptions _deviceOptions;
 
@@ -62,13 +61,13 @@ namespace VeldridNSViewExample
             base.Dispose(disposing);
         }
 
-        public unsafe override void Layout()
+        public override void Layout()
         {
             base.Layout();
 
             const double dpiScale = 1;
-            _width = (uint)(Frame.Width < 0 ? 0 : Math.Ceiling(Frame.Width * dpiScale));
-            _height = (uint)(Frame.Height < 0 ? 0 : Math.Ceiling(Frame.Height * dpiScale));
+            _width = (uint)(Frame.Width < 0 ? 0 : Math.Ceiling(Frame.Width / dpiScale));
+            _height = (uint)(Frame.Height < 0 ? 0 : Math.Ceiling(Frame.Height / dpiScale));
 
             _resized = true;
 
@@ -76,65 +75,54 @@ namespace VeldridNSViewExample
             {
                 _initialized = true;
 
-                if (_backend == GraphicsBackend.Metal)
+                var swapchainSource = SwapchainSource.CreateNSView(Handle);
+                var swapchainDescription = new SwapchainDescription(swapchainSource, Width, Height, _deviceOptions.SwapchainDepthFormat, true, true);
+
+                //Once opengl working enable this to auto switch
+                if (GraphicsDevice.IsBackendSupported(GraphicsBackend.Metal))
                 {
-
-                    var swapchainSource = SwapchainSource.CreateNSView(Handle);
-                    var swapchainDescription = new SwapchainDescription(swapchainSource, Width, Height, _deviceOptions.SwapchainDepthFormat, false, false);
-
-                    GraphicsDevice = GraphicsDevice.CreateMetal(_deviceOptions);
-                    MainSwapchain = GraphicsDevice.ResourceFactory.CreateSwapchain(swapchainDescription);
-
+                    //Metal
+                }
+                else
+                {
+                    //OpenGL
                 }
 
-                WantsBestResolutionOpenGLSurface = true;
+                if (_backend == GraphicsBackend.Metal)
+                {
+                    GraphicsDevice = GraphicsDevice.CreateMetal(_deviceOptions);
+                    MainSwapchain = GraphicsDevice.ResourceFactory.CreateSwapchain(swapchainDescription);
+                }
 
                 if (_backend == GraphicsBackend.OpenGL)
-                {                    
+                {
+                    WantsBestResolutionOpenGLSurface = true;
+
                     var pixelAttrs = new object[] {
                         NSOpenGLPixelFormatAttribute.Accelerated,
                         NSOpenGLPixelFormatAttribute.NoRecovery,
                         NSOpenGLPixelFormatAttribute.DoubleBuffer,
-                        NSOpenGLPixelFormatAttribute.OpenGLProfile, NSOpenGLProfile.Version4_1Core,
+                        NSOpenGLPixelFormatAttribute.OpenGLProfile, NSOpenGLProfile.Version3_2Core,
                         NSOpenGLPixelFormatAttribute.ColorSize, 24,
                         NSOpenGLPixelFormatAttribute.AlphaSize, 8,
                         NSOpenGLPixelFormatAttribute.DepthSize, 24,
                         NSOpenGLPixelFormatAttribute.StencilSize, 8,
                         NSOpenGLPixelFormatAttribute.Multisample,
                         NSOpenGLPixelFormatAttribute.SampleBuffers, 1,
-                        NSOpenGLPixelFormatAttribute.Samples, 4
-                     };
+                        NSOpenGLPixelFormatAttribute.Samples, 4 };
 
-                    var pixelFormat = new NSOpenGLPixelFormat(pixelAttrs);
-
-                    context = new NSOpenGLContext(pixelFormat, null);
-                    context.View = this;
+                    context = new NSOpenGLContext(new NSOpenGLPixelFormat(pixelAttrs), null)
+                    {
+                        View = this
+                    };
                     context.MakeCurrentContext();
-           
-                    //Veldrid.OpenGLBinding.OpenGLNative.LoadGetString(context.Handle, GetProcAddress);
-                    //Veldrid.OpenGLBinding.OpenGLNative.LoadAllFunctions(context.Handle, GetProcAddress, false);
-
-
-                    var swapchainSource = SwapchainSource.CreateNSView(Handle);
-                    var swapchainDescription = new SwapchainDescription(swapchainSource, Width, Height, _deviceOptions.SwapchainDepthFormat, false, false);
-
 
                     var platformInfo = new OpenGLPlatformInfo(
-                        context.Handle,
-                        GetProcAddress,
-                        MakeCurrent,
-                        GetCurrentContext,
-                        ClearCurrentContext,
-                        DeleteContext,
-                        SwapBuffers,
-                        SetSyncToVerticalBlank
+                        context.Handle, GetProcAddress, MakeCurrent, GetCurrentContext, ClearCurrentContext, DeleteContext, SwapBuffers, null
                     );
 
                     GraphicsDevice = GraphicsDevice.CreateOpenGL(_deviceOptions, platformInfo, Width, Height);
-
                     MainSwapchain = GraphicsDevice.MainSwapchain;
-                    //MainSwapchain = GraphicsDevice.ResourceFactory.CreateSwapchain(swapchainDescription);
-
                 }
 
                 DeviceReady?.Invoke();
@@ -145,34 +133,31 @@ namespace VeldridNSViewExample
             }
         }
 
-        public static void MakeCurrent(IntPtr handle)
+        public void MakeCurrent(IntPtr handle)
         {
-            context.MakeCurrentContext();
+            var tempContext = (NSOpenGLContext)ObjCRuntime.Runtime.GetNSObject(handle);
+            tempContext.MakeCurrentContext();
         }
 
-        public static IntPtr GetCurrentContext()
+        public IntPtr GetCurrentContext()
         {
             return NSOpenGLContext.CurrentContext.Handle;
         }
 
-        public static void ClearCurrentContext()
+        public void ClearCurrentContext()
         {
             NSOpenGLContext.ClearCurrentContext();
         }
 
-        public static void DeleteContext(IntPtr ptr)
+        public void DeleteContext(IntPtr handle)
         {
-            Debug.Print("DeleteContext");
+            var tempContext = (NSOpenGLContext)ObjCRuntime.Runtime.GetNSObject(handle);
+            tempContext.Dispose();
         }
 
-        public static void SwapBuffers()
+        public void SwapBuffers()
         {
-            context.FlushBuffer();
-        }
-
-        public static void SetSyncToVerticalBlank(bool sync)
-        {
-            Debug.Print("SetSyncToVerticalBlank");
+            NSOpenGLContext.CurrentContext.FlushBuffer();
         }
 
         private const string Library = "libdl.dylib";
@@ -194,12 +179,6 @@ namespace VeldridNSViewExample
 
         public static IntPtr GetProcAddress(string function)
         {
-            // Instead of allocating and combining strings in managed memory
-            // we do that directly in unmanaged memory. This way, we avoid
-            // 2 string allocations every time this function is called.
-
-            // must add a '_' prefix and null-terminate the function name,
-            // hence we allocate +2 bytes
             var ptr = Marshal.AllocHGlobal(function.Length + 2);
             try
             {
@@ -235,9 +214,6 @@ namespace VeldridNSViewExample
             return symbol;
         }
 
-
-
-
         private CVReturn HandleDisplayLinkOutputCallback(CVDisplayLink displayLink, ref CVTimeStamp inNow, ref CVTimeStamp inOutputTime, CVOptionFlags flagsIn, ref CVOptionFlags flagsOut)
         {
             try
@@ -248,17 +224,19 @@ namespace VeldridNSViewExample
                 }
                 if (GraphicsDevice != null)
                 {
-                    if (_resized)
-                    {
-                        _resized = false;
-                        MainSwapchain.Resize(Width, Height);
-                        Resized?.Invoke();
-                    }
                     BeginInvokeOnMainThread(() =>
                     {
-                        LockFocus();
+                        if (_resized)
+                        {
+                            _resized = false;
+                            if (_backend == GraphicsBackend.OpenGL)
+                            {
+                                context.Update();
+                            }
+                            MainSwapchain.Resize(Width, Height);
+                            Resized?.Invoke();
+                        }
                         Rendering?.Invoke();
-                        UnlockFocus();
                     });
                 }
             }
