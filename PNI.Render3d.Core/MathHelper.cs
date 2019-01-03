@@ -1,5 +1,5 @@
 ﻿using System;
-namespace VeldridNSViewExample
+namespace PNI.Render3d.Core
 {
     public static class MathHelper
     {

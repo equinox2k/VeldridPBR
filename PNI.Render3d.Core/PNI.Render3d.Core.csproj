@@ -1,0 +1,109 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <CustomCommands>
+      <CustomCommands>
+        <Command>
+          <type>BeforeBuild</type>
+          <command>Shaders/build.sh</command>
+        </Command>
+      </CustomCommands>
+    </CustomCommands>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="Render\" />
+    <Folder Include="Resources\" />
+    <Folder Include="Shaders\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Shaders\DepthLimitedBlur.frag.spv" />
+    <None Remove="Shaders\DepthLimitedBlur.vert.spv" />
+    <None Remove="Shaders\DepthNormal.frag.spv" />
+    <None Remove="Shaders\DepthNormal.vert.spv" />
+    <None Remove="Shaders\Model.frag.spv" />
+    <None Remove="Shaders\Model.vert.spv" />
+    <None Remove="Shaders\Output.frag.spv" />
+    <None Remove="Shaders\Output.vert.spv" />
+    <None Remove="Shaders\Sao.frag.spv" />
+    <None Remove="Shaders\Sao.vert.spv" />
+    <None Remove="Resources\brdf.png" />
+    <None Remove="Resources\bumpmap.jpg" />
+    <None Remove="Resources\diffuse.png" />
+    <None Remove="Resources\gloss_negx.jpg" />
+    <None Remove="Resources\gloss_negz.jpg" />
+    <None Remove="Resources\gloss_posx.jpg" />
+    <None Remove="Resources\gloss_posy.jpg" />
+    <None Remove="Resources\gloss_posz.jpg" />
+    <None Remove="Resources\ground.png" />
+    <None Remove="Resources\irradiance_negx.jpg" />
+    <None Remove="Resources\irradiance_negy.jpg" />
+    <None Remove="Resources\irradiance_negz.jpg" />
+    <None Remove="Resources\irradiance_posx.jpg" />
+    <None Remove="Resources\irradiance_posy.jpg" />
+    <None Remove="Resources\irradiance_posz.jpg" />
+    <None Remove="Resources\radiance_negx.jpg" />
+    <None Remove="Resources\radiance_negy.jpg" />
+    <None Remove="Resources\radiance_negz.jpg" />
+    <None Remove="Resources\radiance_posx.jpg" />
+    <None Remove="Resources\radiance_posy.jpg" />
+    <None Remove="Resources\radiance_posz.jpg" />
+    <None Remove="Resources\skybox_negx.jpg" />
+    <None Remove="Resources\skybox_negy.jpg" />
+    <None Remove="Resources\skybox_negz.jpg" />
+    <None Remove="Resources\skybox_posx.jpg" />
+    <None Remove="Resources\skybox_posy.jpg" />
+    <None Remove="Resources\skybox_posz.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Shaders\DepthLimitedBlur.frag.spv" />
+    <EmbeddedResource Include="Shaders\DepthLimitedBlur.vert.spv" />
+    <EmbeddedResource Include="Shaders\DepthNormal.frag.spv" />
+    <EmbeddedResource Include="Shaders\DepthNormal.vert.spv" />
+    <EmbeddedResource Include="Shaders\Model.frag.spv" />
+    <EmbeddedResource Include="Shaders\Model.vert.spv" />
+    <EmbeddedResource Include="Shaders\Output.frag.spv" />
+    <EmbeddedResource Include="Shaders\Output.vert.spv" />
+    <EmbeddedResource Include="Shaders\Sao.frag.spv" />
+    <EmbeddedResource Include="Shaders\Sao.vert.spv" />
+    <EmbeddedResource Include="Resources\brdf.png" />
+    <EmbeddedResource Include="Resources\bumpmap.jpg" />
+    <EmbeddedResource Include="Resources\diffuse.png" />
+    <EmbeddedResource Include="Resources\gloss_negx.jpg" />
+    <EmbeddedResource Include="Resources\gloss_negz.jpg" />
+    <EmbeddedResource Include="Resources\gloss_posx.jpg" />
+    <EmbeddedResource Include="Resources\gloss_posy.jpg" />
+    <EmbeddedResource Include="Resources\gloss_posz.jpg" />
+    <EmbeddedResource Include="Resources\ground.png" />
+    <EmbeddedResource Include="Resources\irradiance_negx.jpg" />
+    <EmbeddedResource Include="Resources\irradiance_negy.jpg" />
+    <EmbeddedResource Include="Resources\irradiance_negz.jpg" />
+    <EmbeddedResource Include="Resources\irradiance_posx.jpg" />
+    <EmbeddedResource Include="Resources\irradiance_posy.jpg" />
+    <EmbeddedResource Include="Resources\irradiance_posz.jpg" />
+    <EmbeddedResource Include="Resources\radiance_negx.jpg" />
+    <EmbeddedResource Include="Resources\radiance_negy.jpg" />
+    <EmbeddedResource Include="Resources\radiance_negz.jpg" />
+    <EmbeddedResource Include="Resources\radiance_posx.jpg" />
+    <EmbeddedResource Include="Resources\radiance_posy.jpg" />
+    <EmbeddedResource Include="Resources\radiance_posz.jpg" />
+    <EmbeddedResource Include="Resources\skybox_negx.jpg" />
+    <EmbeddedResource Include="Resources\skybox_negy.jpg" />
+    <EmbeddedResource Include="Resources\skybox_negz.jpg" />
+    <EmbeddedResource Include="Resources\skybox_posx.jpg" />
+    <EmbeddedResource Include="Resources\skybox_posy.jpg" />
+    <EmbeddedResource Include="Resources\skybox_posz.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="Veldrid.SPIRV" Version="1.0.5" />
+    <PackageReference Include="Veldrid.ImageSharp" Version="4.5.1-gfd65f6930a" />
+    <PackageReference Include="Veldrid.OpenGLBindings" Version="4.5.1-gfd65f6930a" />
+    <PackageReference Include="Veldrid.MetalBindings" Version="4.5.1-gfd65f6930a" />
+    <PackageReference Include="Veldrid" Version="4.5.1-gfd65f6930a" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-dev002311" />
+  </ItemGroup>
+</Project>

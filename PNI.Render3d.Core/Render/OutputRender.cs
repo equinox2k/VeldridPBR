@@ -2,10 +2,9 @@
 using System.Numerics;
 using Veldrid;
 using Veldrid.ImageSharp;
-using Veldrid.Mac;
 using Veldrid.SPIRV;
 
-namespace VeldridNSViewExample.Render
+namespace PNI.Render3d.Core.Render
 {
     public class OutputRender : BaseRender
     {

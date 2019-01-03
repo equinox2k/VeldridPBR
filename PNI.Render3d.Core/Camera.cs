@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 
-namespace VeldridNSViewExample
+namespace PNI.Render3d.Core
 {
     public class Camera
     {

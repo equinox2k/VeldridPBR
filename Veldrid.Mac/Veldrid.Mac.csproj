@@ -57,53 +57,53 @@
     <Reference Include="Xamarin.Mac" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http" />
-    <Reference Include="vk">
-      <HintPath>..\packages\Vk.1.0.21\lib\netstandard1.4\vk.dll</HintPath>
-    </Reference>
+    <Reference Include="System.Numerics.Vectors" />
+    <Reference Include="System.Numerics" />
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\netstandard2.0\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX">
-      <HintPath>..\packages\SharpDX.4.2.0\lib\netstandard1.1\SharpDX.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.D3DCompiler">
-      <HintPath>..\packages\SharpDX.D3DCompiler.4.2.0\lib\netstandard1.1\SharpDX.D3DCompiler.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.DXGI">
-      <HintPath>..\packages\SharpDX.DXGI.4.2.0\lib\netstandard1.1\SharpDX.DXGI.dll</HintPath>
-    </Reference>
-    <Reference Include="SharpDX.Direct3D11">
-      <HintPath>..\packages\SharpDX.Direct3D11.4.2.0\lib\netstandard1.1\SharpDX.Direct3D11.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\portable-net45+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System.Buffers">
       <HintPath>..\packages\System.Buffers.4.5.0\lib\netstandard2.0\System.Buffers.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.CompilerServices.Unsafe">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.2\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.4.5.1\lib\netstandard2.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.DotNet.PlatformAbstractions">
-      <HintPath>..\packages\Microsoft.DotNet.PlatformAbstractions.2.1.0\lib\netstandard1.3\Microsoft.DotNet.PlatformAbstractions.dll</HintPath>
+      <HintPath>..\packages\Microsoft.DotNet.PlatformAbstractions.2.0.3\lib\netstandard1.3\Microsoft.DotNet.PlatformAbstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Extensions.DependencyModel">
-      <HintPath>..\packages\Microsoft.Extensions.DependencyModel.2.1.0\lib\netstandard1.6\Microsoft.Extensions.DependencyModel.dll</HintPath>
+      <HintPath>..\packages\Microsoft.Extensions.DependencyModel.2.0.3\lib\netstandard1.6\Microsoft.Extensions.DependencyModel.dll</HintPath>
     </Reference>
     <Reference Include="NativeLibraryLoader">
-      <HintPath>..\packages\NativeLibraryLoader.1.0.12\lib\netstandard2.0\NativeLibraryLoader.dll</HintPath>
+      <HintPath>..\packages\NativeLibraryLoader.1.0.10\lib\netstandard2.0\NativeLibraryLoader.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX">
+      <HintPath>..\packages\SharpDX.4.0.1\lib\netstandard1.1\SharpDX.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.D3DCompiler">
+      <HintPath>..\packages\SharpDX.D3DCompiler.4.0.1\lib\netstandard1.1\SharpDX.D3DCompiler.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.DXGI">
+      <HintPath>..\packages\SharpDX.DXGI.4.0.1\lib\netstandard1.1\SharpDX.DXGI.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpDX.Direct3D11">
+      <HintPath>..\packages\SharpDX.Direct3D11.4.0.1\lib\netstandard1.1\SharpDX.Direct3D11.dll</HintPath>
     </Reference>
     <Reference Include="Veldrid.MetalBindings">
-      <HintPath>..\packages\Veldrid.MetalBindings.4.5.0\lib\netstandard2.0\Veldrid.MetalBindings.dll</HintPath>
+      <HintPath>..\packages\Veldrid.MetalBindings.4.5.1-gfd65f6930a\lib\netstandard2.0\Veldrid.MetalBindings.dll</HintPath>
     </Reference>
     <Reference Include="Veldrid.OpenGLBindings">
-      <HintPath>..\packages\Veldrid.OpenGLBindings.4.5.0\lib\netstandard2.0\Veldrid.OpenGLBindings.dll</HintPath>
+      <HintPath>..\packages\Veldrid.OpenGLBindings.4.5.1-gfd65f6930a\lib\netstandard2.0\Veldrid.OpenGLBindings.dll</HintPath>
+    </Reference>
+    <Reference Include="vk">
+      <HintPath>..\packages\Vk.1.0.21\lib\netstandard1.4\vk.dll</HintPath>
     </Reference>
     <Reference Include="Veldrid">
-      <HintPath>..\packages\Veldrid.4.5.0\lib\netstandard2.0\Veldrid.dll</HintPath>
+      <HintPath>..\packages\Veldrid.4.5.1-gfd65f6930a\lib\netstandard2.0\Veldrid.dll</HintPath>
     </Reference>
     <Reference Include="Veldrid.SPIRV">
       <HintPath>..\packages\Veldrid.SPIRV.1.0.5\lib\netstandard2.0\Veldrid.SPIRV.dll</HintPath>
     </Reference>
-    <Reference Include="System.Numerics.Vectors" />
-    <Reference Include="System.Numerics" />
     <Reference Include="System.Memory">
       <HintPath>..\packages\System.Memory.4.5.1\lib\netstandard2.0\System.Memory.dll</HintPath>
     </Reference>
@@ -111,10 +111,7 @@
       <HintPath>..\packages\SixLabors.Core.1.0.0-dev000094\lib\netstandard2.0\SixLabors.Core.dll</HintPath>
     </Reference>
     <Reference Include="SixLabors.ImageSharp">
-      <HintPath>..\packages\SixLabors.ImageSharp.1.0.0-dev002298\lib\netstandard2.0\SixLabors.ImageSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="Veldrid.ImageSharp">
-      <HintPath>..\packages\Veldrid.ImageSharp.4.5.0\lib\netstandard2.0\Veldrid.ImageSharp.dll</HintPath>
+      <HintPath>..\packages\SixLabors.ImageSharp.1.0.0-dev002311\lib\netstandard2.0\SixLabors.ImageSharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -133,56 +130,21 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\" />
-    <Folder Include="Render\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
     <None Include="Entitlements.plist" />
     <None Include="packages.config" />
-    <None Include="Shaders\DepthLimitedBlur.frag" />
-    <None Include="Shaders\DepthLimitedBlur.vert" />
-    <None Include="Shaders\DepthNormal.frag" />
-    <None Include="Shaders\DepthNormal.vert" />
-    <None Include="Shaders\Model.frag" />
-    <None Include="Shaders\Model.vert" />
-    <None Include="Shaders\Output.frag" />
-    <None Include="Shaders\Output.vert" />
-    <None Include="Shaders\Readme.txt" />
-    <None Include="Shaders\Sao.frag" />
-    <None Include="Shaders\Sao.vert" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
     <Compile Include="ViewController.cs" />
-    <Compile Include="VeldridView.cs" />
-    <Compile Include="ResourceLoader.cs" />
-    <Compile Include="Camera.cs" />
-    <Compile Include="MathHelper.cs" />
-    <Compile Include="Render\ModelRender.cs" />
-    <Compile Include="Render\BaseRender.cs" />
-    <Compile Include="Render\DepthNormalRender.cs" />
-    <Compile Include="Render\SaoRender.cs" />
-    <Compile Include="Render\OutputRender.cs" />
     <Compile Include="Mesh.cs" />
-    <Compile Include="Render\DepthLimitedBlurRender.cs" />
+    <Compile Include="VeldridView.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Main.storyboard" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Shaders\DepthLimitedBlur.frag.spv" />
-    <EmbeddedResource Include="Shaders\DepthLimitedBlur.vert.spv" />
-    <EmbeddedResource Include="Shaders\DepthNormal.frag.spv" />
-    <EmbeddedResource Include="Shaders\DepthNormal.vert.spv" />
-    <EmbeddedResource Include="Shaders\Model.frag.spv" />
-    <EmbeddedResource Include="Shaders\Model.vert.spv" />
-    <EmbeddedResource Include="Shaders\Output.frag.spv" />
-    <EmbeddedResource Include="Shaders\Output.vert.spv" />
-    <EmbeddedResource Include="Shaders\Sao.frag.spv" />
-    <EmbeddedResource Include="Shaders\Sao.vert.spv" />
-    <EmbeddedResource Include="ThreeDee\bumpmap.jpg" />
-    <EmbeddedResource Include="ThreeDee\diffuse.png" />
   </ItemGroup>
   <ItemGroup>
     <NativeReference Include="..\packages\Veldrid.SPIRV.1.0.5\runtimes\osx-x64\native\libveldrid-spirv.dylib">
@@ -191,33 +153,10 @@
     </NativeReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="ThreeDee\brdf.png" />
-    <EmbeddedResource Include="ThreeDee\gloss_negx.jpg" />
-    <EmbeddedResource Include="ThreeDee\gloss_negy.jpg" />
-    <EmbeddedResource Include="ThreeDee\gloss_negz.jpg" />
-    <EmbeddedResource Include="ThreeDee\gloss_posx.jpg" />
-    <EmbeddedResource Include="ThreeDee\gloss_posy.jpg" />
-    <EmbeddedResource Include="ThreeDee\gloss_posz.jpg" />
-    <EmbeddedResource Include="ThreeDee\ground.png" />
-    <EmbeddedResource Include="ThreeDee\irradiance_negx.jpg" />
-    <EmbeddedResource Include="ThreeDee\irradiance_negy.jpg" />
-    <EmbeddedResource Include="ThreeDee\irradiance_negz.jpg" />
-    <EmbeddedResource Include="ThreeDee\irradiance_posx.jpg" />
-    <EmbeddedResource Include="ThreeDee\irradiance_posy.jpg" />
-    <EmbeddedResource Include="ThreeDee\irradiance_posz.jpg" />
-    <EmbeddedResource Include="ThreeDee\radiance_negx.jpg" />
-    <EmbeddedResource Include="ThreeDee\radiance_negy.jpg" />
-    <EmbeddedResource Include="ThreeDee\radiance_negz.jpg" />
-    <EmbeddedResource Include="ThreeDee\radiance_posx.jpg" />
-    <EmbeddedResource Include="ThreeDee\radiance_posy.jpg" />
-    <EmbeddedResource Include="ThreeDee\radiance_posz.jpg" />
-    <EmbeddedResource Include="ThreeDee\skybox_negx.jpg" />
-    <EmbeddedResource Include="ThreeDee\skybox_negy.jpg" />
-    <EmbeddedResource Include="ThreeDee\skybox_negz.jpg" />
-    <EmbeddedResource Include="ThreeDee\skybox_posx.jpg" />
-    <EmbeddedResource Include="ThreeDee\skybox_posy.jpg" />
-    <EmbeddedResource Include="ThreeDee\skybox_posz.jpg" />
+    <ProjectReference Include="..\PNI.Render3d.Core\PNI.Render3d.Core.csproj">
+      <Project>{60B7C3C3-3AF4-4B26-9D70-354DC252B990}</Project>
+      <Name>PNI.Render3d.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />
-  <Import Project="..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets" Condition="Exists('..\packages\NETStandard.Library.2.0.3\build\netstandard2.0\NETStandard.Library.targets')" />
 </Project>

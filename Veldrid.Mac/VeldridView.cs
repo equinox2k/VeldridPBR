@@ -14,8 +14,6 @@ namespace VeldridNSViewExample
         private static NSOpenGLContext context;
 
 
-
-
         private readonly GraphicsBackend _backend;
         private readonly GraphicsDeviceOptions _deviceOptions;
 
@@ -128,7 +126,7 @@ namespace VeldridNSViewExample
                     GraphicsDevice = GraphicsDevice.CreateOpenGL(_deviceOptions, platformInfo, Width, Height);
 
 
-                    MainSwapchain = null;
+                    MainSwapchain = GraphicsDevice.MainSwapchain;
                     //MainSwapchain = GraphicsDevice.ResourceFactory.CreateSwapchain(swapchainDescription);
 
                 }

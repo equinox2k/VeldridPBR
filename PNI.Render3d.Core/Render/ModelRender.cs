@@ -3,10 +3,9 @@ using System.Numerics;
 using SixLabors.ImageSharp;
 using Veldrid;
 using Veldrid.ImageSharp;
-using Veldrid.Mac;
 using Veldrid.SPIRV;
 
-namespace VeldridNSViewExample.Render
+namespace PNI.Render3d.Core.Render
 {
     public class ModelRender : BaseRender
     {
@@ -86,13 +85,13 @@ namespace VeldridNSViewExample.Render
             _textureEnvMapSpecularView = _graphicsDevice.ResourceFactory.CreateTextureView(_textureEnvMapSpecular);
             _textureEnvMapGloss = LoadCube("gloss").CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory);
             _textureEnvMapGlossView = _graphicsDevice.ResourceFactory.CreateTextureView(_textureEnvMapGloss);
-            _textureBRDF = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.brdf.png")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
+            _textureBRDF = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("PNI.Render3d.Core.Resources.brdf.png")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
             _textureBRDFView = _graphicsDevice.ResourceFactory.CreateTextureView(_textureBRDF);
-            _textureDiffuse = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.diffuse.png")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
+            _textureDiffuse = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("PNI.Render3d.Core.Resources.diffuse.png")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
             _textureDiffuseView = _graphicsDevice.ResourceFactory.CreateTextureView(_textureDiffuse);
-            _textureBumpmap = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.bumpmap.jpg")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
+            _textureBumpmap = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("PNI.Render3d.Core.Resources.bumpmap.jpg")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
             _textureBumpmapView = _graphicsDevice.ResourceFactory.CreateTextureView(_textureBumpmap);
-            _textureEffect = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("VeldridNSViewExample.ThreeDee.gloss_negx.jpg")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
+            _textureEffect = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("PNI.Render3d.Core.Resources.gloss_negx.jpg")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
             _textureEffectView = _graphicsDevice.ResourceFactory.CreateTextureView(_textureEffect);
             _linearSampler = graphicsDevice.LinearSampler;
             _pointSampler = graphicsDevice.PointSampler;

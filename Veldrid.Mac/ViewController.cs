@@ -3,7 +3,8 @@ using AppKit;
 using Foundation;
 using Veldrid;
 using System.Numerics;
-using VeldridNSViewExample.Render;
+using PNI.Render3d.Core;
+using PNI.Render3d.Core.Render;
 
 namespace VeldridNSViewExample
 {
