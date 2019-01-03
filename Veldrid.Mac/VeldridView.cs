@@ -76,40 +76,47 @@ namespace VeldridNSViewExample
             {
                 _initialized = true;
 
-                var swapchainSource = SwapchainSource.CreateNSView(Handle);
-                var swapchainDescription = new SwapchainDescription(swapchainSource, Width, Height, _deviceOptions.SwapchainDepthFormat, true, true);
-
                 if (_backend == GraphicsBackend.Metal)
                 {
+
+                    var swapchainSource = SwapchainSource.CreateNSView(Handle);
+                    var swapchainDescription = new SwapchainDescription(swapchainSource, Width, Height, _deviceOptions.SwapchainDepthFormat, false, false);
+
                     GraphicsDevice = GraphicsDevice.CreateMetal(_deviceOptions);
                     MainSwapchain = GraphicsDevice.ResourceFactory.CreateSwapchain(swapchainDescription);
 
                 }
 
+                WantsBestResolutionOpenGLSurface = true;
+
                 if (_backend == GraphicsBackend.OpenGL)
-                {
+                {                    
                     var pixelAttrs = new object[] {
-                            NSOpenGLPixelFormatAttribute.Accelerated,
-                            NSOpenGLPixelFormatAttribute.NoRecovery,
-                            NSOpenGLPixelFormatAttribute.DoubleBuffer,
-                            NSOpenGLPixelFormatAttribute.OpenGLProfile, NSOpenGLProfile.VersionLegacy,
-                            NSOpenGLPixelFormatAttribute.ColorSize, 24,
-                            NSOpenGLPixelFormatAttribute.AlphaSize, 8,
-                            NSOpenGLPixelFormatAttribute.DepthSize, 24,
-                            NSOpenGLPixelFormatAttribute.StencilSize, 8,
-                            NSOpenGLPixelFormatAttribute.Multisample,
-                            NSOpenGLPixelFormatAttribute.SampleBuffers, 1,
-                            NSOpenGLPixelFormatAttribute.Samples, 4
-                         };
+                        NSOpenGLPixelFormatAttribute.Accelerated,
+                        NSOpenGLPixelFormatAttribute.NoRecovery,
+                        NSOpenGLPixelFormatAttribute.DoubleBuffer,
+                        NSOpenGLPixelFormatAttribute.OpenGLProfile, NSOpenGLProfile.Version4_1Core,
+                        NSOpenGLPixelFormatAttribute.ColorSize, 24,
+                        NSOpenGLPixelFormatAttribute.AlphaSize, 8,
+                        NSOpenGLPixelFormatAttribute.DepthSize, 24,
+                        NSOpenGLPixelFormatAttribute.StencilSize, 8,
+                        NSOpenGLPixelFormatAttribute.Multisample,
+                        NSOpenGLPixelFormatAttribute.SampleBuffers, 1,
+                        NSOpenGLPixelFormatAttribute.Samples, 4
+                     };
 
                     var pixelFormat = new NSOpenGLPixelFormat(pixelAttrs);
 
                     context = new NSOpenGLContext(pixelFormat, null);
+                    context.View = this;
                     context.MakeCurrentContext();
-
+           
                     //Veldrid.OpenGLBinding.OpenGLNative.LoadGetString(context.Handle, GetProcAddress);
                     //Veldrid.OpenGLBinding.OpenGLNative.LoadAllFunctions(context.Handle, GetProcAddress, false);
 
+
+                    var swapchainSource = SwapchainSource.CreateNSView(Handle);
+                    var swapchainDescription = new SwapchainDescription(swapchainSource, Width, Height, _deviceOptions.SwapchainDepthFormat, false, false);
 
 
                     var platformInfo = new OpenGLPlatformInfo(
@@ -124,7 +131,6 @@ namespace VeldridNSViewExample
                     );
 
                     GraphicsDevice = GraphicsDevice.CreateOpenGL(_deviceOptions, platformInfo, Width, Height);
-
 
                     MainSwapchain = GraphicsDevice.MainSwapchain;
                     //MainSwapchain = GraphicsDevice.ResourceFactory.CreateSwapchain(swapchainDescription);
@@ -161,7 +167,7 @@ namespace VeldridNSViewExample
 
         public static void SwapBuffers()
         {
-            Debug.Print("SwapBuffers");
+            context.FlushBuffer();
         }
 
         public static void SetSyncToVerticalBlank(bool sync)
@@ -248,7 +254,12 @@ namespace VeldridNSViewExample
                         MainSwapchain.Resize(Width, Height);
                         Resized?.Invoke();
                     }
-                    Rendering?.Invoke();
+                    BeginInvokeOnMainThread(() =>
+                    {
+                        LockFocus();
+                        Rendering?.Invoke();
+                        UnlockFocus();
+                    });
                 }
             }
             catch (Exception e)

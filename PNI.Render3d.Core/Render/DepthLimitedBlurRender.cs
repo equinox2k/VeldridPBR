@@ -74,8 +74,8 @@ namespace PNI.Render3d.Core.Render
             _cameraNearBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _cameraFarBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _depthCutOffBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
-            _sampleUvOffsetsBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(80, BufferUsage.UniformBuffer));
-            _sampleWeightsBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(48, BufferUsage.UniformBuffer));
+            _sampleUvOffsetsBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(144, BufferUsage.UniformBuffer));
+            _sampleWeightsBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(144, BufferUsage.UniformBuffer));
 
             var modelShaders = _graphicsDevice.ResourceFactory.CreateFromSpirv(LoadShader("DepthLimitedBlur", ShaderStages.Vertex, "main"), LoadShader("DepthLimitedBlur", ShaderStages.Fragment, "main"));
 

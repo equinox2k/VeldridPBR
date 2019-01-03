@@ -57,6 +57,7 @@
     <None Remove="Resources\skybox_posx.jpg" />
     <None Remove="Resources\skybox_posy.jpg" />
     <None Remove="Resources\skybox_posz.jpg" />
+    <None Remove="Resources\gloss_negy.jpg" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Shaders\DepthLimitedBlur.frag.spv" />
@@ -96,6 +97,7 @@
     <EmbeddedResource Include="Resources\skybox_posx.jpg" />
     <EmbeddedResource Include="Resources\skybox_posy.jpg" />
     <EmbeddedResource Include="Resources\skybox_posz.jpg" />
+    <EmbeddedResource Include="Resources\gloss_negy.jpg" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
