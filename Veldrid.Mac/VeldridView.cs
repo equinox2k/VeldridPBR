@@ -13,7 +13,7 @@ namespace VeldridNSViewExample
     {
         private static NSOpenGLContext context;
 
-        private readonly GraphicsBackend _backend;
+        public GraphicsBackend Backend { get; protected set; }
         private readonly GraphicsDeviceOptions _deviceOptions;
 
         private CVDisplayLink _displayLink;
@@ -38,7 +38,7 @@ namespace VeldridNSViewExample
                 throw new NotSupportedException($"{backend} is not supported on windows.");
             }
 
-            _backend = backend;
+            Backend = backend;
             _deviceOptions = deviceOptions;
         }
 
@@ -88,13 +88,13 @@ namespace VeldridNSViewExample
                     //OpenGL
                 }
 
-                if (_backend == GraphicsBackend.Metal)
+                if (Backend == GraphicsBackend.Metal)
                 {
                     GraphicsDevice = GraphicsDevice.CreateMetal(_deviceOptions);
                     MainSwapchain = GraphicsDevice.ResourceFactory.CreateSwapchain(swapchainDescription);
                 }
 
-                if (_backend == GraphicsBackend.OpenGL)
+                if (Backend == GraphicsBackend.OpenGL)
                 {
                     WantsBestResolutionOpenGLSurface = true;
 
@@ -229,7 +229,7 @@ namespace VeldridNSViewExample
                         if (_resized)
                         {
                             _resized = false;
-                            if (_backend == GraphicsBackend.OpenGL)
+                            if (Backend == GraphicsBackend.OpenGL)
                             {
                                 context.Update();
                             }

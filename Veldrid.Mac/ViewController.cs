@@ -191,7 +191,15 @@ namespace VeldridNSViewExample
             _commandList.End();
 
             _veldridView.GraphicsDevice.SubmitCommands(_commandList);
-            _veldridView.GraphicsDevice.SwapBuffers();
+
+            if (_veldridView.Backend == GraphicsBackend.OpenGL)
+            {
+                _veldridView.GraphicsDevice.SwapBuffers();
+            }
+            else
+            {
+                _veldridView.GraphicsDevice.SwapBuffers(_veldridView.MainSwapchain);
+            }
         }
 
         private static Vertex[] GetCubeVertices()
