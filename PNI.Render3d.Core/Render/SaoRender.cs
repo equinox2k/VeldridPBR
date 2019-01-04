@@ -129,6 +129,7 @@ namespace PNI.Render3d.Core.Render
                 commandList.UpdateBuffer(_seedBuffer, 0, _seedValue);
 
                 commandList.SetFramebuffer(_framebuffer);
+                commandList.ClearColorTarget(0, RgbaFloat.Clear);
                 commandList.ClearDepthStencil(1f);
                 commandList.SetPipeline(_pipeline);
                 commandList.SetVertexBuffer(0, vertexBuffer);
