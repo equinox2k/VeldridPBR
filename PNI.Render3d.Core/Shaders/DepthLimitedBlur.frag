@@ -18,19 +18,14 @@ layout(set = 1, binding = 2) uniform DepthCutOff
     float uDepthCutOff;
 };
 
-layout(set = 1, binding = 3) uniform SampleUvOffsets
+layout(set = 1, binding = 3) uniform SampleUvOffsetWeights
 {
-    vec2 uSampleUvOffsets[KERNEL_RADIUS + 1];
+    vec4 uSampleUvOffsetWeights[KERNEL_RADIUS + 1];
 };
 
-layout(set = 1, binding = 4) uniform SampleWeights
-{
-    float uSampleWeights[KERNEL_RADIUS + 1];
-};
+layout(set = 1, binding = 4) uniform sampler LinearSampler;
 
-layout(set = 1, binding = 5) uniform sampler LinearSampler;
-
-layout(set = 1, binding = 6) uniform sampler PointSampler;
+layout(set = 1, binding = 5) uniform sampler PointSampler;
 
 layout(set = 2, binding = 0) uniform texture2D TextureDepthNormal;
 
@@ -84,11 +79,11 @@ void main()
 
     float centerViewZ = -getViewZ(depth);
     bool rBreak = false, lBreak = false;
-    float weightSum = uSampleWeights[0];
+    float weightSum = uSampleUvOffsetWeights[0].z;
     vec4 diffuseSum = texture(sampler2D(TextureDiffuse, LinearSampler), iTexCoord) * weightSum;
-    for( int i = 1; i <= KERNEL_RADIUS; i ++ ) {
-        float sampleWeight = uSampleWeights[i];
-        vec2 sampleUvOffset = uSampleUvOffsets[i] * iInvSize;
+    for (int i = 1; i <= KERNEL_RADIUS; i ++ ) {
+        float sampleWeight = uSampleUvOffsetWeights[i].z;
+        vec2 sampleUvOffset = uSampleUvOffsetWeights[i].xy * iInvSize;
         vec2 sampleUv = iTexCoord + sampleUvOffset;
         float viewZ = -getViewZ(getDepth(sampleUv));
         if(abs(viewZ - centerViewZ) > uDepthCutOff) rBreak = true;
@@ -103,7 +98,6 @@ void main()
             diffuseSum += texture(sampler2D(TextureDiffuse, LinearSampler), sampleUv) * sampleWeight;
             weightSum += sampleWeight;
         }
-
     }
     oFragColor = diffuseSum / weightSum;
 }

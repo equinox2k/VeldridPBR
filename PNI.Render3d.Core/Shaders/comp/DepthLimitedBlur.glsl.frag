@@ -17,26 +17,19 @@ struct CameraFar
 
 uniform CameraFar _85;
 
-struct SampleWeights
+struct SampleUvOffsetWeights
 {
-    float uSampleWeights[9];
+    vec4 uSampleUvOffsetWeights[9];
 };
 
-uniform SampleWeights _125;
-
-struct SampleUvOffsets
-{
-    vec2 uSampleUvOffsets[9];
-};
-
-uniform SampleUvOffsets _157;
+uniform SampleUvOffsetWeights _125;
 
 struct DepthCutOff
 {
     float uDepthCutOff;
 };
 
-uniform DepthCutOff _182;
+uniform DepthCutOff _180;
 
 uniform sampler2D SPIRV_Cross_CombinedTextureDepthNormalPointSampler;
 uniform sampler2D SPIRV_Cross_CombinedTextureDiffuseLinearSampler;
@@ -82,17 +75,17 @@ void main()
     float centerViewZ = -getViewZ(param_1);
     bool rBreak = false;
     bool lBreak = false;
-    float weightSum = _125.uSampleWeights[0];
+    float weightSum = _125.uSampleUvOffsetWeights[0].z;
     vec4 diffuseSum = texture2D(SPIRV_Cross_CombinedTextureDiffuseLinearSampler, iTexCoord) * weightSum;
     for (int i = 1; i <= 8; i++)
     {
-        float sampleWeight = _125.uSampleWeights[i];
-        vec2 sampleUvOffset = _157.uSampleUvOffsets[i] * iInvSize;
+        float sampleWeight = _125.uSampleUvOffsetWeights[i].z;
+        vec2 sampleUvOffset = _125.uSampleUvOffsetWeights[i].xy * iInvSize;
         vec2 sampleUv = iTexCoord + sampleUvOffset;
         vec2 param_2 = sampleUv;
         float param_3 = getDepth(param_2);
         float viewZ = -getViewZ(param_3);
-        if (abs(viewZ - centerViewZ) > _182.uDepthCutOff)
+        if (abs(viewZ - centerViewZ) > _180.uDepthCutOff)
         {
             rBreak = true;
         }
@@ -105,7 +98,7 @@ void main()
         vec2 param_4 = sampleUv;
         float param_5 = getDepth(param_4);
         viewZ = -getViewZ(param_5);
-        if (abs(viewZ - centerViewZ) > _182.uDepthCutOff)
+        if (abs(viewZ - centerViewZ) > _180.uDepthCutOff)
         {
             lBreak = true;
         }

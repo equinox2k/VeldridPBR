@@ -18,16 +18,14 @@ namespace PNI.Render3d.Core.Render
         private readonly DeviceBuffer _cameraNearBuffer;
         private readonly DeviceBuffer _cameraFarBuffer;
         private readonly DeviceBuffer _depthCutOffBuffer;
-        private readonly DeviceBuffer _sampleUvOffsetsBuffer;
-        private readonly DeviceBuffer _sampleWeightsBuffer;
+        private readonly DeviceBuffer _sampleUvOffsetWeightsBuffer;
         private readonly ResourceSet _outputVertSet0;
         private readonly ResourceSet _outputFragSet1;
         private readonly ResourceLayout _outputFragLayout2;
         private readonly Pipeline _pipeline;
 
-        public Vector2[] OffsetsHoriz { get; set; }
-        public Vector2[] OffsetsVert { get; set; }
-        public float[] Weights { get; set; }
+        public Vector4[] OffsetsHoriz { get; set; }
+        public Vector4[] OffsetsVert { get; set; }
 
         public Texture GetColorTarget()
         {
@@ -46,19 +44,16 @@ namespace PNI.Render3d.Core.Render
             const int saoKernelRadius = 8;
             const int saoBlurStdDev = 4;
 
-            var tempOffsetsHoriz = new List<Vector2>();
-            var tempOffsetsVert = new List<Vector2>();
-            var tempWeights = new List<float>();
+            var tempOffsetsHoriz = new List<Vector4>();
+            var tempOffsetsVert = new List<Vector4>();
             for (var i = 0; i <= saoKernelRadius; i++)
             {
-                tempOffsetsHoriz.Add(new Vector2(0, i));
-                tempOffsetsVert.Add(new Vector2(i, 0));
                 var gausian = Math.Exp(-(i * i) / (2.0 * (saoBlurStdDev * saoBlurStdDev))) / (Math.Sqrt(2.0 * Math.PI) * saoBlurStdDev);
-                tempWeights.Add((float)gausian);
+                tempOffsetsHoriz.Add(new Vector4(0, i, (float)gausian, 0));
+                tempOffsetsVert.Add(new Vector4(i, 0, (float)gausian, 0));
             }
             OffsetsHoriz = tempOffsetsHoriz.ToArray();
             OffsetsVert = tempOffsetsVert.ToArray();
-            Weights = tempWeights.ToArray();
         }
 
         public DepthLimitedBlurRender(GraphicsDevice graphicsDevice, Camera camera, VertexLayoutDescription vertexLayoutDescription)
@@ -74,8 +69,7 @@ namespace PNI.Render3d.Core.Render
             _cameraNearBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _cameraFarBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _depthCutOffBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
-            _sampleUvOffsetsBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(144, BufferUsage.UniformBuffer));
-            _sampleWeightsBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(144, BufferUsage.UniformBuffer));
+            _sampleUvOffsetWeightsBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(144, BufferUsage.UniformBuffer));
 
             var modelShaders = _graphicsDevice.ResourceFactory.CreateFromSpirv(LoadShader("DepthLimitedBlur", ShaderStages.Vertex, "main"), LoadShader("DepthLimitedBlur", ShaderStages.Fragment, "main"));
 
@@ -90,8 +84,7 @@ namespace PNI.Render3d.Core.Render
                     new ResourceLayoutElementDescription("CameraNear", ResourceKind.UniformBuffer, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("CameraFar", ResourceKind.UniformBuffer, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("DepthCutOff", ResourceKind.UniformBuffer, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("SampleUvOffsets", ResourceKind.UniformBuffer, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("SampleWeights", ResourceKind.UniformBuffer, ShaderStages.Fragment),
+                    new ResourceLayoutElementDescription("SampleUvOffsetWeights", ResourceKind.UniformBuffer, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("LinearSampler", ResourceKind.Sampler, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("PointSampler", ResourceKind.Sampler, ShaderStages.Fragment)));
 
@@ -118,8 +111,7 @@ namespace PNI.Render3d.Core.Render
                 _cameraNearBuffer,
                 _cameraFarBuffer,
                 _depthCutOffBuffer,
-                _sampleUvOffsetsBuffer,
-                _sampleWeightsBuffer,
+                _sampleUvOffsetWeightsBuffer,
                 _graphicsDevice.LinearSampler,
                 _graphicsDevice.PointSampler));
         }
@@ -135,11 +127,9 @@ namespace PNI.Render3d.Core.Render
                 commandList.UpdateBuffer(_cameraNearBuffer, 0, _camera.Near);
                 commandList.UpdateBuffer(_cameraFarBuffer, 0, _camera.Far);
                 commandList.UpdateBuffer(_depthCutOffBuffer, 0, 0.01f);
-                commandList.UpdateBuffer(_sampleUvOffsetsBuffer, 0, verticalPass ? OffsetsVert : OffsetsHoriz);
-                commandList.UpdateBuffer(_sampleWeightsBuffer, 0, Weights);
+                commandList.UpdateBuffer(_sampleUvOffsetWeightsBuffer, 0, verticalPass ? OffsetsVert : OffsetsHoriz);
 
                 commandList.SetFramebuffer(_framebuffer);
-                commandList.ClearColorTarget(0, RgbaFloat.White);
                 commandList.ClearDepthStencil(1f);
                 commandList.SetPipeline(_pipeline);
                 commandList.SetVertexBuffer(0, vertexBuffer);
@@ -147,7 +137,7 @@ namespace PNI.Render3d.Core.Render
                 commandList.SetGraphicsResourceSet(0, _outputVertSet0);
                 commandList.SetGraphicsResourceSet(1, _outputFragSet1);
                 commandList.SetGraphicsResourceSet(2, outputFragSet2);
-                //commandList.DrawIndexed(6, 1, 0, 0, 0);
+                commandList.DrawIndexed(6, 1, 0, 0, 0);
             }
         }
     }
