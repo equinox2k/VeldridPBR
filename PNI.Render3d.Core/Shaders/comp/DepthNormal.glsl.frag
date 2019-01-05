@@ -3,6 +3,13 @@
 #extension GL_ARB_shading_language_420pack : require
 #endif
 
+struct IsUvOriginTopLeft
+{
+    int uIsUvOriginTopLeft;
+};
+
+uniform IsUvOriginTopLeft _106;
+
 varying vec3 iNormal;
 
 vec2 EncodeViewNormalStereo(vec3 n)

@@ -1,67 +1,72 @@
 #version 450
 
-layout(set = 1, binding = 0) uniform DiffuseColor
+layout(set = 1, binding = 0) uniform IsUvOriginTopLeft
+{
+    int uIsUvOriginTopLeft;
+};
+
+layout(set = 1, binding = 1) uniform DiffuseColor
 {
     vec4 uDiffuseColor;
 };
 
-layout(set = 1, binding = 1) uniform UseTextureDiffuse
+layout(set = 1, binding = 2) uniform UseTextureDiffuse
 {
     int uUseTextureDiffuse;
 };
 
-layout(set = 1, binding = 2) uniform UseTextureBumpmap
+layout(set = 1, binding = 3) uniform UseTextureBumpmap
 {
     int uUseTextureBumpmap;
 };
 
-layout(set = 1, binding = 3) uniform UseTextureEffect
+layout(set = 1, binding = 4) uniform UseTextureEffect
 {
     int uUseTextureEffect;
 };
 
-layout(set = 1, binding = 4) uniform Effect
+layout(set = 1, binding = 5) uniform Effect
 {
     vec4 uEffect;
 };
 
-layout(set = 1, binding = 5) uniform LightDirection
+layout(set = 1, binding = 6) uniform LightDirection
 {
     vec3 uLightDirection;
 };
 
-layout(set = 1, binding = 6) uniform LightColor
+layout(set = 1, binding = 7) uniform LightColor
 {
     vec3 uLightColor;
 };
 
-layout(set = 1, binding = 7) uniform MetallicRoughnessValues
+layout(set = 1, binding = 8) uniform MetallicRoughnessValues
 {
     vec2 uMetallicRoughnessValues;
 };
 
-layout(set = 1, binding = 8) uniform CameraPosition
+layout(set = 1, binding = 9) uniform CameraPosition
 {
     vec3 uCameraPosition;
 };
 
-layout(set = 1, binding = 9) uniform textureCube TextureEnvMapDiffuse;
+layout(set = 1, binding = 10) uniform textureCube TextureEnvMapDiffuse;
 
-layout(set = 1, binding = 10) uniform textureCube TextureEnvMapSpecular;
+layout(set = 1, binding = 11) uniform textureCube TextureEnvMapSpecular;
 
-layout(set = 1, binding = 11) uniform textureCube TextureEnvMapGloss;
+layout(set = 1, binding = 12) uniform textureCube TextureEnvMapGloss;
 
-layout(set = 1, binding = 12) uniform texture2D TextureBRDF;
+layout(set = 1, binding = 13) uniform texture2D TextureBRDF;
 
-layout(set = 1, binding = 13) uniform texture2D TextureDiffuse;
+layout(set = 1, binding = 14) uniform texture2D TextureDiffuse;
 
-layout(set = 1, binding = 14) uniform texture2D TextureBumpmap;
+layout(set = 1, binding = 15) uniform texture2D TextureBumpmap;
 
-layout(set = 1, binding = 15) uniform texture2D TextureEffect;
+layout(set = 1, binding = 16) uniform texture2D TextureEffect;
 
-layout(set = 1, binding = 16) uniform sampler LinearSampler;
+layout(set = 1, binding = 17) uniform sampler LinearSampler;
 
-layout(set = 1, binding = 17) uniform sampler PointSampler;
+layout(set = 1, binding = 18) uniform sampler PointSampler;
 
 layout(location = 0) in vec3 iPosition;
 layout(location = 1) in vec2 iTexCoord;
@@ -89,7 +94,7 @@ struct PBRInfo {
 const float cPI = 3.141592653589793;
 const float cMinRoughness = 0.04;
 
-vec3 getNormal()
+vec3 getNormal(vec2 texCoord)
 {
     if (uUseTextureBumpmap == 0)
     {
@@ -97,7 +102,7 @@ vec3 getNormal()
     } 
     else 
     {
-        vec3 n = texture(sampler2D(TextureBumpmap, LinearSampler), iTexCoord).rgb;
+        vec3 n = texture(sampler2D(TextureBumpmap, LinearSampler), texCoord).rgb;
         return normalize(iTBN * (2.0 * n - 1.0));
     }
 }
@@ -150,13 +155,15 @@ float microfacetDistribution(PBRInfo pbrInputs)
 
 void main()
 {
+    vec2 texCoord = vec2(iTexCoord.x, 1.0 - iTexCoord.y);
+    
     float metalValue = uMetallicRoughnessValues.x;
     float roughValue = uMetallicRoughnessValues.y;
     bool glossy = false;
 
     if (uUseTextureEffect != 0)
     {
-        vec4 effectColor = texture(sampler2D(TextureEffect, PointSampler), iTexCoord);
+        vec4 effectColor = texture(sampler2D(TextureEffect, PointSampler), texCoord);
         if (effectColor.r >= 0.1)
         {
             metalValue = 1.0;
@@ -172,7 +179,7 @@ void main()
     vec4 baseColor = uDiffuseColor;
     if (uUseTextureDiffuse != 0)
     {
-        baseColor = texture(sampler2D(TextureDiffuse, LinearSampler), iTexCoord);
+        baseColor = texture(sampler2D(TextureDiffuse, LinearSampler), texCoord);
     }
 
     if (int(uEffect.x) == 1) 
@@ -200,7 +207,7 @@ void main()
     float reflectance90 = clamp(reflectance * 25.0, 0.0, 1.0);
     vec3 specularEnvironmentR0 = specularColor.rgb;
     vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
-    vec3 n = getNormal();
+    vec3 n = getNormal(texCoord);
     vec3 v = normalize(uCameraPosition - iPosition);
     vec3 l = normalize(uLightDirection);
     vec3 h = normalize(l+v);

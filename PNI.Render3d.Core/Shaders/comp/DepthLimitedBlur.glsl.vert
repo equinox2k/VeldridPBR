@@ -20,5 +20,7 @@ void main()
     oTexCoord = iTexCoord;
     oInvSize = vec2(1.0) / _17.uSize;
     gl_Position = vec4(iPosition, 1.0);
+    gl_Position.z = 2.0 * gl_Position.z - gl_Position.w;
+    gl_Position.y = -gl_Position.y;
 }
 

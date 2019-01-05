@@ -1,5 +1,10 @@
 #version 450
 
+layout(set = 1, binding = 0) uniform IsUvOriginTopLeft
+{
+    int uIsUvOriginTopLeft;
+};
+
 layout(location = 0) in vec3 iNormal;
 
 layout(location = 0) out vec4 oFragColor;

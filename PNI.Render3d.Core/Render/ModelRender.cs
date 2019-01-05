@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Numerics;
+using PNI.Render3d.Core.Helpers;
+using PNI.Rendering.Harmony;
 using SixLabors.ImageSharp;
 using Veldrid;
 using Veldrid.ImageSharp;
@@ -14,6 +16,7 @@ namespace PNI.Render3d.Core.Render
 
         private readonly GraphicsDevice _graphicsDevice;
         private readonly Camera _camera;
+        private readonly DeviceBuffer _isUvOriginTopLeftBuffer;
         private readonly DeviceBuffer _modelMatrixBuffer;
         private readonly DeviceBuffer _viewMatrixBuffer;
         private readonly DeviceBuffer _projectionMatrixBuffer;
@@ -42,8 +45,8 @@ namespace PNI.Render3d.Core.Render
         private readonly TextureView _textureEffectView;
         private readonly Sampler _linearSampler;
         private readonly Sampler _pointSampler;
-        private readonly ResourceSet _outputVertSet;
-        private readonly ResourceSet _outputFragSet;
+        private readonly ResourceSet _outputVertSet0;
+        private readonly ResourceSet _outputFragSet1;
         private readonly Pipeline _pipeline;
 
         public Texture GetColorTarget()
@@ -65,10 +68,10 @@ namespace PNI.Render3d.Core.Render
 
             Resize();
 
+            _isUvOriginTopLeftBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _modelMatrixBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
             _viewMatrixBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
             _projectionMatrixBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
-
             _diffuseColorBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(32, BufferUsage.UniformBuffer));
             _useTextureDiffuse = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _useTextureBumpmap = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
@@ -96,18 +99,20 @@ namespace PNI.Render3d.Core.Render
             _linearSampler = graphicsDevice.LinearSampler;
             _pointSampler = graphicsDevice.PointSampler;
 
-            var modelShaders = _graphicsDevice.ResourceFactory.CreateFromSpirv(LoadShader("Model", ShaderStages.Vertex, "main"), LoadShader("Model", ShaderStages.Fragment, "main"));
+            var crossCompileOptions = new CrossCompileOptions(true, false); 
+            var modelShaders = _graphicsDevice.ResourceFactory.CreateFromSpirv(LoadShader("Model", ShaderStages.Vertex, "main"), LoadShader("Model", ShaderStages.Fragment, "main"), crossCompileOptions);
 
             var shaderSet = new ShaderSetDescription(new[] { vertexLayoutDescription }, modelShaders);
 
-            ResourceLayout outputVertLayout = _graphicsDevice.ResourceFactory.CreateResourceLayout(
+            ResourceLayout outputVertLayout0 = _graphicsDevice.ResourceFactory.CreateResourceLayout(
                 new ResourceLayoutDescription(
                     new ResourceLayoutElementDescription("ModelMatrix", ResourceKind.UniformBuffer, ShaderStages.Vertex),
                     new ResourceLayoutElementDescription("ViewMatrix", ResourceKind.UniformBuffer, ShaderStages.Vertex),
                     new ResourceLayoutElementDescription("ProjectionMatrix", ResourceKind.UniformBuffer, ShaderStages.Vertex)));
 
-            ResourceLayout outputFragLayout = _graphicsDevice.ResourceFactory.CreateResourceLayout(
+            ResourceLayout outputFragLayout1 = _graphicsDevice.ResourceFactory.CreateResourceLayout(
                 new ResourceLayoutDescription(
+                    new ResourceLayoutElementDescription("IsUvOriginTopLeft", ResourceKind.UniformBuffer, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("DiffuseColor", ResourceKind.UniformBuffer, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("UseTextureDiffuse", ResourceKind.UniformBuffer, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("UseTextureBumpmap", ResourceKind.UniformBuffer, ShaderStages.Fragment),
@@ -133,17 +138,18 @@ namespace PNI.Render3d.Core.Render
                 new RasterizerStateDescription(FaceCullMode.Back, PolygonFillMode.Solid, FrontFace.CounterClockwise, true, false),
                 PrimitiveTopology.TriangleList,
                 shaderSet,
-                new[] { outputVertLayout, outputFragLayout },
+                new[] { outputVertLayout0, outputFragLayout1 },
                 _framebuffer.OutputDescription));
 
-            _outputVertSet = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
-                outputVertLayout,
+            _outputVertSet0 = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
+                outputVertLayout0,
                 _modelMatrixBuffer,
                 _viewMatrixBuffer,
                 _projectionMatrixBuffer));
 
-            _outputFragSet = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
-                outputFragLayout,
+            _outputFragSet1 = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
+                outputFragLayout1,
+                _isUvOriginTopLeftBuffer,
                 _diffuseColorBuffer,
                 _useTextureDiffuse,
                 _useTextureBumpmap,
@@ -164,8 +170,9 @@ namespace PNI.Render3d.Core.Render
                 _pointSampler));
         }
 
-        public void Update(CommandList commandList, DeviceBuffer vertexBuffer, DeviceBuffer indexBuffer)
+        public void Update(CommandList commandList, SurfaceGroups surfaceGroups, string option)
         {
+            commandList.UpdateBuffer(_isUvOriginTopLeftBuffer, 0, _graphicsDevice.IsUvOriginTopLeft ? 1 : 0);
             commandList.UpdateBuffer(_modelMatrixBuffer, 0, _camera.ModelMatrix);
             commandList.UpdateBuffer(_viewMatrixBuffer, 0, _camera.ViewMatrix);
             commandList.UpdateBuffer(_projectionMatrixBuffer, 0, _camera.ProjectionMatrix);
@@ -190,11 +197,35 @@ namespace PNI.Render3d.Core.Render
             commandList.ClearColorTarget(0, RgbaFloat.Clear);
             commandList.ClearDepthStencil(1f);
             commandList.SetPipeline(_pipeline);
-            commandList.SetVertexBuffer(0, vertexBuffer);
-            commandList.SetIndexBuffer(indexBuffer, IndexFormat.UInt16);
-            commandList.SetGraphicsResourceSet(0, _outputVertSet);
-            commandList.SetGraphicsResourceSet(1, _outputFragSet);
-            commandList.DrawIndexed(36, 1, 0, 0, 0);
+            commandList.SetVertexBuffer(0, surfaceGroups.VertexBuffer);
+            commandList.SetIndexBuffer(surfaceGroups.IndexBuffer, IndexFormat.UInt32);
+            commandList.SetGraphicsResourceSet(0, _outputVertSet0);
+            commandList.SetGraphicsResourceSet(1, _outputFragSet1);
+
+            foreach (var surfaceGroupInfo in surfaceGroups.SurfaceGroupInfos)
+            {
+                var properties = surfaceGroupInfo.Properties as SurfaceProperties;
+                if (!option.Equals("Default", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    var surfaceRootProperties = surfaceGroupInfo.Properties;
+                    foreach (var surfaceOption in surfaceRootProperties.Options)
+                    {
+                        if (!surfaceOption.OptionName.Equals(option, StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            continue;
+                        }
+                        properties = surfaceOption;
+                        break;
+                    }
+                }
+
+                if (!properties.Render)
+                {
+                    continue;
+                }
+
+                commandList.DrawIndexed(surfaceGroupInfo.IndexCount, 1, surfaceGroupInfo.IndexOffset, 0, 0);
+            }
         }
     }
 }

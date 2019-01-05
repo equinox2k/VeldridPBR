@@ -3,29 +3,34 @@
 #define KERNEL_RADIUS 8
 #define EPSILON 1e-6
 
-layout(set = 1, binding = 0) uniform CameraNear
+layout(set = 1, binding = 0) uniform IsUvOriginTopLeft
+{
+    int uIsUvOriginTopLeft;
+};
+
+layout(set = 1, binding = 1) uniform CameraNear
 {
     float uCameraNear;
 };
 
-layout(set = 1, binding = 1) uniform CameraFar
+layout(set = 1, binding = 2) uniform CameraFar
 {
     float uCameraFar;
 };
 
-layout(set = 1, binding = 2) uniform DepthCutOff
+layout(set = 1, binding = 3) uniform DepthCutOff
 {
     float uDepthCutOff;
 };
 
-layout(set = 1, binding = 3) uniform SampleUvOffsetWeights
+layout(set = 1, binding = 4) uniform SampleUvOffsetWeights
 {
     vec4 uSampleUvOffsetWeights[KERNEL_RADIUS + 1];
 };
 
-layout(set = 1, binding = 4) uniform sampler LinearSampler;
+layout(set = 1, binding = 5) uniform sampler LinearSampler;
 
-layout(set = 1, binding = 5) uniform sampler PointSampler;
+layout(set = 1, binding = 6) uniform sampler PointSampler;
 
 layout(set = 2, binding = 0) uniform texture2D TextureDepthNormal;
 
@@ -58,7 +63,7 @@ vec3 DecodeViewNormalStereo(vec4 enc4)
 }
 
 float getDepth(vec2 screenPosition) {
-    vec4 textureColor = texture(sampler2D(TextureDepthNormal, PointSampler), vec2(screenPosition.x, 1.0 - screenPosition.y));
+    vec4 textureColor = texture(sampler2D(TextureDepthNormal, PointSampler), screenPosition);
     return DecodeFloatRG(textureColor.zw);
 }
 

@@ -24,63 +24,70 @@ struct UseTextureBumpmap
     int uUseTextureBumpmap;
 };
 
-uniform UseTextureBumpmap _40;
+uniform UseTextureBumpmap _43;
 
 struct MetallicRoughnessValues
 {
     vec2 uMetallicRoughnessValues;
 };
 
-uniform MetallicRoughnessValues _278;
+uniform MetallicRoughnessValues _288;
 
 struct UseTextureEffect
 {
     int uUseTextureEffect;
 };
 
-uniform UseTextureEffect _289;
+uniform UseTextureEffect _299;
 
 struct DiffuseColor
 {
     vec4 uDiffuseColor;
 };
 
-uniform DiffuseColor _325;
+uniform DiffuseColor _335;
 
 struct UseTextureDiffuse
 {
     int uUseTextureDiffuse;
 };
 
-uniform UseTextureDiffuse _331;
+uniform UseTextureDiffuse _341;
 
 struct Effect
 {
     vec4 uEffect;
 };
 
-uniform Effect _345;
+uniform Effect _355;
 
 struct CameraPosition
 {
     vec3 uCameraPosition;
 };
 
-uniform CameraPosition _474;
+uniform CameraPosition _485;
 
 struct LightDirection
 {
     vec3 uLightDirection;
 };
 
-uniform LightDirection _485;
+uniform LightDirection _496;
 
 struct LightColor
 {
     vec3 uLightColor;
 };
 
-uniform LightColor _578;
+uniform LightColor _589;
+
+struct IsUvOriginTopLeft
+{
+    int uIsUvOriginTopLeft;
+};
+
+uniform IsUvOriginTopLeft _619;
 
 uniform sampler2D SPIRV_Cross_CombinedTextureEffectPointSampler;
 uniform sampler2D SPIRV_Cross_CombinedTextureDiffuseLinearSampler;
@@ -98,15 +105,15 @@ varying vec3 iNormal;
 
 vec3 _86;
 
-vec3 getNormal()
+vec3 getNormal(vec2 texCoord)
 {
-    if (_40.uUseTextureBumpmap == 0)
+    if (_43.uUseTextureBumpmap == 0)
     {
         return normalize(iTBN[2]);
     }
     else
     {
-        vec3 n = texture2D(SPIRV_Cross_CombinedTextureBumpmapLinearSampler, iTexCoord).xyz;
+        vec3 n = texture2D(SPIRV_Cross_CombinedTextureBumpmapLinearSampler, texCoord).xyz;
         return normalize(iTBN * ((n * 2.0) - vec3(1.0)));
     }
 }
@@ -159,12 +166,13 @@ vec3 getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection, bool gloss)
 
 void main()
 {
-    float metalValue = _278.uMetallicRoughnessValues.x;
-    float roughValue = _278.uMetallicRoughnessValues.y;
+    vec2 texCoord = vec2(iTexCoord.x, 1.0 - iTexCoord.y);
+    float metalValue = _288.uMetallicRoughnessValues.x;
+    float roughValue = _288.uMetallicRoughnessValues.y;
     bool glossy = false;
-    if (_289.uUseTextureEffect != 0)
+    if (_299.uUseTextureEffect != 0)
     {
-        vec4 effectColor = texture2D(SPIRV_Cross_CombinedTextureEffectPointSampler, iTexCoord);
+        vec4 effectColor = texture2D(SPIRV_Cross_CombinedTextureEffectPointSampler, texCoord);
         if (effectColor.x >= 0.100000001490116119384765625)
         {
             metalValue = 1.0;
@@ -175,12 +183,12 @@ void main()
     float perceptualRoughness = clamp(roughValue, 0.039999999105930328369140625, 1.0);
     float metallic = clamp(metalValue, 0.0, 1.0);
     float alphaRoughness = perceptualRoughness * perceptualRoughness;
-    vec4 baseColor = _325.uDiffuseColor;
-    if (_331.uUseTextureDiffuse != 0)
+    vec4 baseColor = _335.uDiffuseColor;
+    if (_341.uUseTextureDiffuse != 0)
     {
-        baseColor = texture2D(SPIRV_Cross_CombinedTextureDiffuseLinearSampler, iTexCoord);
+        baseColor = texture2D(SPIRV_Cross_CombinedTextureDiffuseLinearSampler, texCoord);
     }
-    if (int(_345.uEffect.x) == 1)
+    if (int(_355.uEffect.x) == 1)
     {
         vec3 lumCoeff = vec3(0.25, 0.64999997615814208984375, 0.100000001490116119384765625);
         float lum = dot(lumCoeff, baseColor.xyz);
@@ -190,11 +198,11 @@ void main()
         vec3 result2 = vec3(1.0) - (((vec3(1.0) - blend) * 2.0) * (vec3(1.0) - baseColor.xyz));
         baseColor = vec4((vec3(1.0) + mix(result1, result2, vec3(L))) / vec3(2.0), baseColor.w);
     }
-    if (int(_345.uEffect.x) == 2)
+    if (int(_355.uEffect.x) == 2)
     {
-        float minY = _345.uEffect.z;
-        float maxY = _345.uEffect.w;
-        float effectValue = ((1.0 - ((iVertexPosition.y - minY) / (maxY - minY))) - 2.0) + (_345.uEffect.y * 4.0);
+        float minY = _355.uEffect.z;
+        float maxY = _355.uEffect.w;
+        float effectValue = ((1.0 - ((iVertexPosition.y - minY) / (maxY - minY))) - 2.0) + (_355.uEffect.y * 4.0);
         baseColor = mix(vec4(0.0, 0.0, 0.0, 1.0), baseColor, vec4(max(0.0, min(1.0, effectValue))));
     }
     vec3 specularColor = mix(vec3(0.039999999105930328369140625), baseColor.xyz, vec3(metallic));
@@ -202,9 +210,10 @@ void main()
     float reflectance90 = clamp(reflectance * 25.0, 0.0, 1.0);
     vec3 specularEnvironmentR0 = specularColor;
     vec3 specularEnvironmentR90 = vec3(1.0) * reflectance90;
-    vec3 n = getNormal();
-    vec3 v = normalize(_474.uCameraPosition - iPosition);
-    vec3 l = normalize(_485.uLightDirection);
+    vec2 param = texCoord;
+    vec3 n = getNormal(param);
+    vec3 v = normalize(_485.uCameraPosition - iPosition);
+    vec3 l = normalize(_496.uLightDirection);
     vec3 h = normalize(l + v);
     vec3 reflection = -normalize(reflect(v, n));
     float NdotL = clamp(dot(n, l), 0.001000000047497451305389404296875, 1.0);
@@ -213,21 +222,21 @@ void main()
     float LdotH = clamp(dot(l, h), 0.0, 1.0);
     float VdotH = clamp(dot(v, h), 0.0, 1.0);
     PBRInfo pbrInputs = PBRInfo(NdotL, NdotV, NdotH, LdotH, VdotH, perceptualRoughness, metallic, specularEnvironmentR0, specularEnvironmentR90, alphaRoughness, baseColor.xyz, specularColor);
-    PBRInfo param = pbrInputs;
-    vec3 F = specularReflection(param);
     PBRInfo param_1 = pbrInputs;
-    float G = geometricOcclusion(param_1);
+    vec3 F = specularReflection(param_1);
     PBRInfo param_2 = pbrInputs;
-    float D = microfacetDistribution(param_2);
+    float G = geometricOcclusion(param_2);
     PBRInfo param_3 = pbrInputs;
-    vec3 diffuseContrib = (vec3(1.0) - F) * diffuse(param_3);
-    vec3 specContrib = ((F * G) * D) / vec3((4.0 * NdotL) * NdotV);
-    vec3 color = (_578.uLightColor * NdotL) * (diffuseContrib + specContrib);
+    float D = microfacetDistribution(param_3);
     PBRInfo param_4 = pbrInputs;
-    vec3 param_5 = n;
-    vec3 param_6 = reflection;
-    bool param_7 = glossy;
-    color += getIBLContribution(param_4, param_5, param_6, param_7);
+    vec3 diffuseContrib = (vec3(1.0) - F) * diffuse(param_4);
+    vec3 specContrib = ((F * G) * D) / vec3((4.0 * NdotL) * NdotV);
+    vec3 color = (_589.uLightColor * NdotL) * (diffuseContrib + specContrib);
+    PBRInfo param_5 = pbrInputs;
+    vec3 param_6 = n;
+    vec3 param_7 = reflection;
+    bool param_8 = glossy;
+    color += getIBLContribution(param_5, param_6, param_7, param_8);
     gl_FragData[0] = vec4(color, baseColor.w);
 }
 

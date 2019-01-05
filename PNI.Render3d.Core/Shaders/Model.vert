@@ -30,7 +30,7 @@ void main()
 {
     vec4 position = uModelMatrix * vec4(iPosition, 1.0);
     oPosition = vec3(position.xyz) / vec3(position.w);
-    oTexCoord = vec2(iTexCoord.x, 1.0 - iTexCoord.y);
+    oTexCoord = iTexCoord;
     vec3 normalW = normalize(vec3((uModelMatrix * vec4(iNormal, 0.0)).xyz));
     vec3 tangentW = normalize(vec3((uModelMatrix * vec4(iTangent, 0.0)).xyz));
     vec3 bitangentW = cross(normalW, tangentW);

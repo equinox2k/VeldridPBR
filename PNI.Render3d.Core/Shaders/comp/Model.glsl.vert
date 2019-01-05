@@ -15,14 +15,14 @@ struct ProjectionMatrix
     mat4 uProjectionMatrix;
 };
 
-uniform ProjectionMatrix _137;
+uniform ProjectionMatrix _130;
 
 struct ViewMatrix
 {
     mat4 uViewMatrix;
 };
 
-uniform ViewMatrix _142;
+uniform ViewMatrix _135;
 
 attribute vec3 iPosition;
 varying vec3 oPosition;
@@ -38,13 +38,14 @@ void main()
 {
     vec4 position = _13.uModelMatrix * vec4(iPosition, 1.0);
     oPosition = vec3(position.xyz) / vec3(position.w);
-    oTexCoord = vec2(iTexCoord.x, 1.0 - iTexCoord.y);
+    oTexCoord = iTexCoord;
     vec3 normalW = normalize(vec3((_13.uModelMatrix * vec4(iNormal, 0.0)).xyz));
     vec3 tangentW = normalize(vec3((_13.uModelMatrix * vec4(iTangent, 0.0)).xyz));
     vec3 bitangentW = cross(normalW, tangentW);
     oTBN = mat3(vec3(vec3(tangentW)), vec3(vec3(bitangentW)), vec3(vec3(normalW)));
     oNormal = normalW;
     oVertexPosition = iPosition;
-    gl_Position = (_137.uProjectionMatrix * _142.uViewMatrix) * position;
+    gl_Position = (_130.uProjectionMatrix * _135.uViewMatrix) * position;
+    gl_Position.z = 2.0 * gl_Position.z - gl_Position.w;
 }
 

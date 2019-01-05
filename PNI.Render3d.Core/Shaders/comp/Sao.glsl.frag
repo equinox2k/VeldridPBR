@@ -80,6 +80,13 @@ struct Intensity
 
 uniform Intensity _398;
 
+struct IsUvOriginTopLeft
+{
+    int uIsUvOriginTopLeft;
+};
+
+uniform IsUvOriginTopLeft _443;
+
 uniform sampler2D SPIRV_Cross_CombinedTextureDepthNormalPointSampler;
 
 varying vec2 iTexCoord;

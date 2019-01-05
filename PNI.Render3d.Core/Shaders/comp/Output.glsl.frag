@@ -17,6 +17,13 @@ struct Opacity
 
 uniform Opacity _83;
 
+struct IsUvOriginTopLeft
+{
+    int uIsUvOriginTopLeft;
+};
+
+uniform IsUvOriginTopLeft _123;
+
 uniform samplerCube SPIRV_Cross_CombinedTextureEnvSkyboxLinearSampler;
 uniform sampler2D SPIRV_Cross_CombinedTextureDiffuseLinearSampler;
 uniform sampler2D SPIRV_Cross_CombinedTextureAmbientOcclusionLinearSampler;
@@ -35,7 +42,7 @@ void main()
     vec4 albedo = texture2D(SPIRV_Cross_CombinedTextureDiffuseLinearSampler, iTexCoord);
     albedo = vec4(albedo.xyz, albedo.w * _83.uOpacity);
     vec4 result = vec4((albedoSkybox.xyz * (1.0 - albedo.w)) + albedo.xyz, albedoSkybox.w);
-    vec4 ambientOcclusion = texture2D(SPIRV_Cross_CombinedTextureAmbientOcclusionLinearSampler, vec2(iTexCoord.x, 1.0 - iTexCoord.y));
+    vec4 ambientOcclusion = texture2D(SPIRV_Cross_CombinedTextureAmbientOcclusionLinearSampler, iTexCoord);
     gl_FragData[0] = result * ambientOcclusion;
 }
 

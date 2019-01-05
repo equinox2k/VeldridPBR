@@ -19,6 +19,6 @@ layout(location = 1) out vec3 oViewDirection;
 void main() 
 {
     oViewDirection = (uInverseModelViewMatrix * uInverseProjectionMatrix * vec4(iPosition, 1.0)).xyz;
-    oTexCoord = vec2(iTexCoord.x, 1.0 - iTexCoord.y);
+    oTexCoord = iTexCoord;
     gl_Position = vec4(iPosition, 1.0);
 }

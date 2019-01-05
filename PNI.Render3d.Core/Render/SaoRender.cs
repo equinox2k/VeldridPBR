@@ -15,6 +15,7 @@ namespace PNI.Render3d.Core.Render
         private readonly float _seedValue;
         private readonly GraphicsDevice _graphicsDevice;
         private readonly Camera _camera;
+        private readonly DeviceBuffer _isUvOriginTopLeftBuffer;
         private readonly DeviceBuffer _cameraNearBuffer;
         private readonly DeviceBuffer _cameraFarBuffer;
         private readonly DeviceBuffer _projectionMatrixBuffer;
@@ -50,6 +51,7 @@ namespace PNI.Render3d.Core.Render
 
             Resize();
 
+            _isUvOriginTopLeftBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _cameraNearBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _cameraFarBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _projectionMatrixBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
@@ -62,12 +64,14 @@ namespace PNI.Render3d.Core.Render
             _sizeBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _seedBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
 
-            var modelShaders = _graphicsDevice.ResourceFactory.CreateFromSpirv(LoadShader("Sao", ShaderStages.Vertex, "main"), LoadShader("Sao", ShaderStages.Fragment, "main"));
+            var crossCompileOptions = new CrossCompileOptions(true, false);
+            var modelShaders = _graphicsDevice.ResourceFactory.CreateFromSpirv(LoadShader("Sao", ShaderStages.Vertex, "main"), LoadShader("Sao", ShaderStages.Fragment, "main"), crossCompileOptions);
 
             var shaderSet = new ShaderSetDescription(new[] { vertexLayoutDescription }, modelShaders);
 
             ResourceLayout outputFragLayout0 = _graphicsDevice.ResourceFactory.CreateResourceLayout(
                 new ResourceLayoutDescription(
+                    new ResourceLayoutElementDescription("IsUvOriginTopLeft", ResourceKind.UniformBuffer, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("CameraNear", ResourceKind.UniformBuffer, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("CameraFar", ResourceKind.UniformBuffer, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("ProjectionMatrix", ResourceKind.UniformBuffer, ShaderStages.Fragment),
@@ -96,6 +100,7 @@ namespace PNI.Render3d.Core.Render
                
             _outputFragSet0 = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
                 outputFragLayout0,
+                _isUvOriginTopLeftBuffer,
                 _cameraNearBuffer,
                 _cameraFarBuffer,
                 _projectionMatrixBuffer,
@@ -110,12 +115,13 @@ namespace PNI.Render3d.Core.Render
                 _graphicsDevice.LinearSampler));
         }
 
-        public void Update(CommandList commandList, DeviceBuffer vertexBuffer, DeviceBuffer indexBuffer, Texture depthNormalTexture)
+        public void Update(CommandList commandList, Mesh screenMesh, Texture depthNormalTexture)
         {
             using (var outputFragSet1 = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
                 _outputFragLayout1,
                 _graphicsDevice.ResourceFactory.CreateTextureView(depthNormalTexture))))
             {
+                commandList.UpdateBuffer(_isUvOriginTopLeftBuffer, 0, _graphicsDevice.IsUvOriginTopLeft ? 1 : 0);
                 commandList.UpdateBuffer(_cameraNearBuffer, 0, _camera.Near);
                 commandList.UpdateBuffer(_cameraFarBuffer, 0, _camera.Far);
                 commandList.UpdateBuffer(_projectionMatrixBuffer, 0, _camera.ProjectionMatrix);
@@ -132,8 +138,8 @@ namespace PNI.Render3d.Core.Render
                 commandList.ClearColorTarget(0, RgbaFloat.Clear);
                 commandList.ClearDepthStencil(1f);
                 commandList.SetPipeline(_pipeline);
-                commandList.SetVertexBuffer(0, vertexBuffer);
-                commandList.SetIndexBuffer(indexBuffer, IndexFormat.UInt16);
+                commandList.SetVertexBuffer(0, screenMesh.VertexBuffer);
+                commandList.SetIndexBuffer(screenMesh.IndexBuffer, IndexFormat.UInt32);
                 commandList.SetGraphicsResourceSet(0, _outputFragSet0);
                 commandList.SetGraphicsResourceSet(1, outputFragSet1);
                 commandList.DrawIndexed(6, 1, 0, 0, 0);

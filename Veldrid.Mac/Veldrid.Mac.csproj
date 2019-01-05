@@ -140,7 +140,6 @@
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
     <Compile Include="ViewController.cs" />
-    <Compile Include="Mesh.cs" />
     <Compile Include="VeldridView.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -7,7 +7,7 @@ layout(location = 0) out vec2 oTexCoord;
 
 void main()
 {
-    oTexCoord = vec2(iTexCoord.x, 1.0 - iTexCoord.y);
+    oTexCoord = iTexCoord;
     gl_Position = vec4(iPosition, 1.0);
 }
 

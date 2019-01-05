@@ -7,62 +7,67 @@
 #define PI2 6.28318530718
 #define EPSILON 1e-6
 
-layout(set = 0, binding = 0) uniform CameraNear
+layout(set = 0, binding = 0) uniform IsUvOriginTopLeft
+{
+    int uIsUvOriginTopLeft;
+};
+
+layout(set = 0, binding = 1) uniform CameraNear
 {
     float uCameraNear;
 };
 
-layout(set = 0, binding = 1) uniform CameraFar
+layout(set = 0, binding = 2) uniform CameraFar
 {
     float uCameraFar;
 };
 
-layout(set = 0, binding = 2) uniform ProjectionMatrix
+layout(set = 0, binding = 3) uniform ProjectionMatrix
 {
     mat4 uProjectionMatrix;
 };
 
-layout(set = 0, binding = 3) uniform InverseProjectionMatrix
+layout(set = 0, binding = 4) uniform InverseProjectionMatrix
 {
     mat4 uInverseProjectionMatrix;
 };
 
-layout(set = 0, binding = 4) uniform Scale
+layout(set = 0, binding = 5) uniform Scale
 {
     float uScale;
 };
 
-layout(set = 0, binding = 5) uniform Intensity
+layout(set = 0, binding = 6) uniform Intensity
 {
     float uIntensity;
 };
 
-layout(set = 0, binding = 6) uniform Bias
+layout(set = 0, binding = 7) uniform Bias
 {
     float uBias;
 };
 
-layout(set = 0, binding = 7) uniform KernelRadius
+layout(set = 0, binding = 8) uniform KernelRadius
 {
     float uKernelRadius;
 };
 
-layout(set = 0, binding = 8) uniform MinResolution
+layout(set = 0, binding = 9) uniform MinResolution
 {
     float uMinResolution;
 };
 
-layout(set = 0, binding = 9) uniform Size
+layout(set = 0, binding = 10) uniform Size
 {
     vec2 uSize;
 };
 
-layout(set = 0, binding = 10) uniform Seed
+layout(set = 0, binding = 11) uniform Seed
 {
     float uSeed;
 };
 
-layout(set = 0, binding = 11) uniform sampler PointSampler;
+layout(set = 0, binding = 12) uniform sampler PointSampler;
 
 layout(set = 1, binding = 0) uniform texture2D TextureDepthNormal;
 

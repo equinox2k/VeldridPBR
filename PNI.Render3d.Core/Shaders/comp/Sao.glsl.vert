@@ -9,7 +9,8 @@ attribute vec3 iPosition;
 
 void main()
 {
-    oTexCoord = vec2(iTexCoord.x, 1.0 - iTexCoord.y);
+    oTexCoord = iTexCoord;
     gl_Position = vec4(iPosition, 1.0);
+    gl_Position.z = 2.0 * gl_Position.z - gl_Position.w;
 }
 

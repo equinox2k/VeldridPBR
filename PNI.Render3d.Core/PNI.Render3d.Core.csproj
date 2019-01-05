@@ -18,6 +18,7 @@
     <Folder Include="Render\" />
     <Folder Include="Resources\" />
     <Folder Include="Shaders\" />
+    <Folder Include="Helpers\" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Shaders\DepthLimitedBlur.frag.spv" />

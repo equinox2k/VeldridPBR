@@ -1,18 +1,23 @@
 #version 450
 
-layout(set = 1, binding = 0) uniform Opacity
+layout(set = 1, binding = 0) uniform IsUvOriginTopLeft
+{
+    int uIsUvOriginTopLeft;
+};
+
+layout(set = 1, binding = 1) uniform Opacity
 {
     float uOpacity;
 };
 
-layout(set = 1, binding = 1) uniform SkyboxDiffuse
+layout(set = 1, binding = 2) uniform SkyboxDiffuse
 {
     vec4 uSkyboxDiffuse;
 };
 
-layout(set = 1, binding = 2) uniform textureCube TextureEnvSkybox;
+layout(set = 1, binding = 3) uniform textureCube TextureEnvSkybox;
 
-layout(set = 1, binding = 3) uniform sampler LinearSampler;
+layout(set = 1, binding = 4) uniform sampler LinearSampler;
 
 layout(set = 2, binding = 0) uniform texture2D TextureDiffuse;
 
@@ -31,10 +36,10 @@ void main()
     albedoSkybox.rgb += dither;
     albedoSkybox = max(albedoSkybox, 0.0) * uSkyboxDiffuse; 
    
-    vec4 albedo = texture(sampler2D(TextureDiffuse, LinearSampler), iTexCoord.st);
+    vec4 albedo = texture(sampler2D(TextureDiffuse, LinearSampler), iTexCoord);
     albedo = vec4(albedo.rgb, albedo.a * uOpacity);
     
     vec4 result = vec4((albedoSkybox.rgb * (1.0 - albedo.a)) + albedo.rgb, albedoSkybox.a);
-    vec4 ambientOcclusion = texture(sampler2D(TextureAmbientOcclusion, LinearSampler), vec2(iTexCoord.x, 1.0 - iTexCoord.y));
+    vec4 ambientOcclusion = texture(sampler2D(TextureAmbientOcclusion, LinearSampler), iTexCoord);
     oFragColor = result * ambientOcclusion;
 }

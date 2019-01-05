@@ -31,15 +31,10 @@ namespace VeldridNSViewExample
         public event Action Rendering;
         public event Action Resized;
 
-        public VeldridView(GraphicsBackend backend, GraphicsDeviceOptions deviceOptions)
+        public VeldridView()
         {
-            if (!(backend == GraphicsBackend.Metal || backend == GraphicsBackend.OpenGL))
-            {
-                throw new NotSupportedException($"{backend} is not supported on windows.");
-            }
-
-            Backend = backend;
-            _deviceOptions = deviceOptions;
+            Backend = GraphicsBackend.Metal;
+            _deviceOptions = new GraphicsDeviceOptions(true, PixelFormat.R32_Float, false, ResourceBindingModel.Improved, true);
         }
 
         public uint Width => _width < 1 ? 1 : _width;
@@ -65,15 +60,18 @@ namespace VeldridNSViewExample
         {
             base.Layout();
 
-            const double dpiScale = 1;
-            _width = (uint)(Frame.Width < 0 ? 0 : Math.Ceiling(Frame.Width / dpiScale));
-            _height = (uint)(Frame.Height < 0 ? 0 : Math.Ceiling(Frame.Height / dpiScale));
+            float dpiScale = (float)Window.BackingScaleFactor;
+            _width = (uint)(Frame.Width < 0 ? 0 : Math.Ceiling(Frame.Width * dpiScale));
+            _height = (uint)(Frame.Height < 0 ? 0 : Math.Ceiling(Frame.Height * dpiScale));
 
             _resized = true;
 
             if (!_initialized)
             {
                 _initialized = true;
+
+                var a = _deviceOptions.PreferDepthRangeZeroToOne;
+                var b = _deviceOptions.PreferStandardClipSpaceYDirection;
 
                 var swapchainSource = SwapchainSource.CreateNSView(Handle);
                 var swapchainDescription = new SwapchainDescription(swapchainSource, Width, Height, _deviceOptions.SwapchainDepthFormat, true, true);
@@ -123,7 +121,13 @@ namespace VeldridNSViewExample
 
                     GraphicsDevice = GraphicsDevice.CreateOpenGL(_deviceOptions, platformInfo, Width, Height);
                     MainSwapchain = GraphicsDevice.MainSwapchain;
+
+
                 }
+
+                var c = GraphicsDevice.IsClipSpaceYInverted; // metal = false, gl = false
+                var d = GraphicsDevice.IsDepthRangeZeroToOne; // metal = true, gl = false
+                var e = GraphicsDevice.IsUvOriginTopLeft;
 
                 DeviceReady?.Invoke();
 

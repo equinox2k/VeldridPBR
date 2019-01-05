@@ -11,6 +11,7 @@ namespace PNI.Render3d.Core.Render
         private readonly Camera _camera;
         private readonly GraphicsDevice _graphicsDevice;
         private readonly Framebuffer _framebuffer;
+        private readonly DeviceBuffer _isUvOriginTopLeftBuffer;
         private readonly DeviceBuffer _opacityBuffer;
         private readonly DeviceBuffer _skyboxDiffuseBuffer;
         private readonly DeviceBuffer _inverseModelViewMatrixBuffer;
@@ -26,15 +27,17 @@ namespace PNI.Render3d.Core.Render
             _graphicsDevice = graphicsDevice;
             _camera = camera;
 
+            _isUvOriginTopLeftBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _opacityBuffer = graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _skyboxDiffuseBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(16, BufferUsage.UniformBuffer));
             _inverseModelViewMatrixBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
             _inverseProjectionMatrixBuffer = _graphicsDevice.ResourceFactory.CreateBuffer(new BufferDescription(64, BufferUsage.UniformBuffer));
 
+            var crossCompileOptions = new CrossCompileOptions(true, false);
             var textureEnvSkybox = LoadCube("skybox").CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory);
             var textureEnvSkyboxView = _graphicsDevice.ResourceFactory.CreateTextureView(textureEnvSkybox);
 
-            var modelShaders = graphicsDevice.ResourceFactory.CreateFromSpirv(LoadShader("Output", ShaderStages.Vertex, "main"), LoadShader("Output", ShaderStages.Fragment, "main"));
+            var modelShaders = graphicsDevice.ResourceFactory.CreateFromSpirv(LoadShader("Output", ShaderStages.Vertex, "main"), LoadShader("Output", ShaderStages.Fragment, "main"), crossCompileOptions);
 
             var shaderSet = new ShaderSetDescription(new[] { vertexLayoutDescription }, modelShaders);
 
@@ -45,6 +48,7 @@ namespace PNI.Render3d.Core.Render
 
             var outputFragLayout1 = graphicsDevice.ResourceFactory.CreateResourceLayout(
                 new ResourceLayoutDescription(
+                    new ResourceLayoutElementDescription("IsUvOriginTopLeft", ResourceKind.UniformBuffer, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("Opacity", ResourceKind.UniformBuffer, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("SkyboxDiffuse", ResourceKind.UniformBuffer, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("TextureEnvSkybox", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
@@ -71,19 +75,21 @@ namespace PNI.Render3d.Core.Render
                  
             _outputFragSet1 = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
                 outputFragLayout1,
+                _isUvOriginTopLeftBuffer,
                 _opacityBuffer,
                 _skyboxDiffuseBuffer,
                 textureEnvSkyboxView,
                 graphicsDevice.LinearSampler));
         }
 
-        public void Update(CommandList commandList, DeviceBuffer vertexBuffer, DeviceBuffer indexBuffer, Texture diffuseTexture, Texture textureAmbientOcclusion)
+        public void Update(CommandList commandList, Mesh screenMesh, Texture diffuseTexture, Texture textureAmbientOcclusion)
         {
             using (var outputFragSet2 = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
                 _outputFragLayout2,
                 _graphicsDevice.ResourceFactory.CreateTextureView(diffuseTexture),
                 _graphicsDevice.ResourceFactory.CreateTextureView(textureAmbientOcclusion))))
             {
+                commandList.UpdateBuffer(_isUvOriginTopLeftBuffer, 0, _graphicsDevice.IsUvOriginTopLeft ? 1 : 0);
                 commandList.UpdateBuffer(_opacityBuffer, 0, 1.0f);
                 commandList.UpdateBuffer(_skyboxDiffuseBuffer, 0, new Vector4(0.8f, 0.8f, 0.8f, 1));
                 commandList.UpdateBuffer(_inverseModelViewMatrixBuffer, 0, _camera.InverseModelViewMatrix);
@@ -93,8 +99,8 @@ namespace PNI.Render3d.Core.Render
                 commandList.ClearColorTarget(0, RgbaFloat.Clear);
                 commandList.ClearDepthStencil(1f);
                 commandList.SetPipeline(_pipeline);
-                commandList.SetVertexBuffer(0, vertexBuffer);
-                commandList.SetIndexBuffer(indexBuffer, IndexFormat.UInt16);
+                commandList.SetVertexBuffer(0, screenMesh.VertexBuffer);
+                commandList.SetIndexBuffer(screenMesh.IndexBuffer, IndexFormat.UInt32);
                 commandList.SetGraphicsResourceSet(0, _outputVertSet0);
                 commandList.SetGraphicsResourceSet(1, _outputFragSet1);
                 commandList.SetGraphicsResourceSet(2, outputFragSet2);

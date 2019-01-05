@@ -39,5 +39,6 @@ void main()
 {
     oNormal = normalize(_14.uNormalMatrix * vec4(iNormal, 0.0)).xyz;
     gl_Position = ((_39.uProjectionMatrix * _44.uViewMatrix) * _50.uModelMatrix) * vec4(iPosition, 1.0);
+    gl_Position.z = 2.0 * gl_Position.z - gl_Position.w;
 }
 
