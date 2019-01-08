@@ -2,9 +2,9 @@
 using System.IO;
 using System.Numerics;
 using System.Text;
-using PNI.Render3d.Core;
+using PNI.Rendering.Harmony;
 
-namespace PNI.Rendering.Harmony
+namespace PNI.Rendering.Harmony.Model
 {
     public static class ModelWriter
     {

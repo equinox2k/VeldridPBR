@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Numerics;
 
-namespace PNI.Rendering.Harmony
+namespace PNI.Rendering.Harmony.Model
 {
     public class SurfaceGroupInfo : IDisposable
     {

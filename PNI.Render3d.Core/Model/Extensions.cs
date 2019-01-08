@@ -2,9 +2,9 @@
 using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
-using PNI.Render3d.Core.Helpers;
+using PNI.Rendering.Harmony.Helpers;
 
-namespace PNI.Rendering.Harmony
+namespace PNI.Rendering.Harmony.Model
 {
     public static class Extensions
     {

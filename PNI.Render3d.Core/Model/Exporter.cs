@@ -5,7 +5,7 @@ using System.Runtime.Serialization.Json;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace PNI.Rendering.Harmony
+namespace PNI.Rendering.Harmony.Model
 {
     public static class Exporter
     {

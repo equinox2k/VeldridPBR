@@ -5,9 +5,9 @@ using System.IO.Compression;
 using System.Numerics;
 using System.Runtime.Serialization.Json;
 using System.Text;
-using PNI.Render3d.Core;
+using PNI.Rendering.Harmony;
 
-namespace PNI.Rendering.Harmony
+namespace PNI.Rendering.Harmony.Model
 {
     public static class ModelReader
     {
@@ -55,7 +55,7 @@ namespace PNI.Rendering.Harmony
             return Encoding.UTF8.GetString(stringBuffer);
         }
 
-        private static ModelResource GetModelResource(ModelResource[] modelResources, string resourceName)
+        public static ModelResource GetModelResource(ModelResource[] modelResources, string resourceName)
         {
             foreach (var modelResource in modelResources)
             {
@@ -70,6 +70,8 @@ namespace PNI.Rendering.Harmony
 
         public static bool Unpack(Stream stream, out SurfaceGroups surfaceGroups)
         {
+            stream.Position = 0;
+
             surfaceGroups = null;
 
             ModelResource bmodelResource = null;

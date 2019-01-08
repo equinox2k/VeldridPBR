@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace PNI.Render3d.Core
+namespace PNI.Rendering.Harmony
 {
     public static class ResourceLoader
     {

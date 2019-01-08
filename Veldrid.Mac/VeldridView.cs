@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using AppKit;
+using CoreGraphics;
 using CoreVideo;
+using PNI.Rendering.Harmony;
 using Veldrid;
 using Veldrid.OpenGL;
 
@@ -11,16 +14,13 @@ namespace VeldridNSViewExample
 {
     public class VeldridView : NSView
     {
-        private static NSOpenGLContext context;
-
+        public Camera Camera { get; protected set; }
         public GraphicsBackend Backend { get; protected set; }
-        private readonly GraphicsDeviceOptions _deviceOptions;
 
+        private NSOpenGLContext _context;
         private CVDisplayLink _displayLink;
         private bool _paused;
         private bool _resized;
-        private uint _width;
-        private uint _height;
         private bool _disposed;
         private bool _initialized;
 
@@ -31,15 +31,15 @@ namespace VeldridNSViewExample
         public event Action Rendering;
         public event Action Resized;
 
+        private float _rotationX;
+        private float _rotationY;
+        private float _rotationOffsetX;
+        private float _rotationOffsetY;
+
         public VeldridView()
         {
-            Backend = GraphicsBackend.Metal;
-            _deviceOptions = new GraphicsDeviceOptions(true, PixelFormat.R32_Float, false, ResourceBindingModel.Improved, true);
+            Camera = new Camera();
         }
-
-        public uint Width => _width < 1 ? 1 : _width;
-
-        public uint Height => _height < 1 ? 1 : _height;
 
         protected override void Dispose(bool disposing)
         {
@@ -60,40 +60,24 @@ namespace VeldridNSViewExample
         {
             base.Layout();
 
-            float dpiScale = (float)Window.BackingScaleFactor;
-            _width = (uint)(Frame.Width < 0 ? 0 : Math.Ceiling(Frame.Width * dpiScale));
-            _height = (uint)(Frame.Height < 0 ? 0 : Math.Ceiling(Frame.Height * dpiScale));
-
-            _resized = true;
-
             if (!_initialized)
             {
                 _initialized = true;
 
-                var a = _deviceOptions.PreferDepthRangeZeroToOne;
-                var b = _deviceOptions.PreferStandardClipSpaceYDirection;
-
+                var graphicsDeviceOptions = new GraphicsDeviceOptions(true, PixelFormat.R32_Float, false, ResourceBindingModel.Improved, true);
                 var swapchainSource = SwapchainSource.CreateNSView(Handle);
-                var swapchainDescription = new SwapchainDescription(swapchainSource, Width, Height, _deviceOptions.SwapchainDepthFormat, true, true);
+                var swapchainDescription = new SwapchainDescription(swapchainSource, Camera.Width, Camera.Height, graphicsDeviceOptions.SwapchainDepthFormat, true, true);
 
                 //Once opengl working enable this to auto switch
-                if (GraphicsDevice.IsBackendSupported(GraphicsBackend.Metal))
+                if (!GraphicsDevice.IsBackendSupported(GraphicsBackend.Metal))
                 {
-                    //Metal
+                    Backend = GraphicsBackend.Metal;
+                    GraphicsDevice = GraphicsDevice.CreateMetal(graphicsDeviceOptions);
+                    MainSwapchain = GraphicsDevice.ResourceFactory.CreateSwapchain(swapchainDescription);
                 }
                 else
                 {
-                    //OpenGL
-                }
-
-                if (Backend == GraphicsBackend.Metal)
-                {
-                    GraphicsDevice = GraphicsDevice.CreateMetal(_deviceOptions);
-                    MainSwapchain = GraphicsDevice.ResourceFactory.CreateSwapchain(swapchainDescription);
-                }
-
-                if (Backend == GraphicsBackend.OpenGL)
-                {
+                    Backend = GraphicsBackend.OpenGL;
                     WantsBestResolutionOpenGLSurface = true;
 
                     var pixelAttrs = new object[] {
@@ -109,25 +93,20 @@ namespace VeldridNSViewExample
                         NSOpenGLPixelFormatAttribute.SampleBuffers, 1,
                         NSOpenGLPixelFormatAttribute.Samples, 4 };
 
-                    context = new NSOpenGLContext(new NSOpenGLPixelFormat(pixelAttrs), null)
+                    _context = new NSOpenGLContext(new NSOpenGLPixelFormat(pixelAttrs), null)
                     {
                         View = this
                     };
-                    context.MakeCurrentContext();
+                    _context.MakeCurrentContext();
 
                     var platformInfo = new OpenGLPlatformInfo(
-                        context.Handle, GetProcAddress, MakeCurrent, GetCurrentContext, ClearCurrentContext, DeleteContext, SwapBuffers, null
+                        _context.Handle, GetProcAddress, MakeCurrent, GetCurrentContext, ClearCurrentContext, DeleteContext, SwapBuffers, null
                     );
 
-                    GraphicsDevice = GraphicsDevice.CreateOpenGL(_deviceOptions, platformInfo, Width, Height);
+                    GraphicsDevice = GraphicsDevice.CreateOpenGL(graphicsDeviceOptions, platformInfo, Camera.Width, Camera.Height);
                     MainSwapchain = GraphicsDevice.MainSwapchain;
 
-
                 }
-
-                var c = GraphicsDevice.IsClipSpaceYInverted; // metal = false, gl = false
-                var d = GraphicsDevice.IsDepthRangeZeroToOne; // metal = true, gl = false
-                var e = GraphicsDevice.IsUvOriginTopLeft;
 
                 DeviceReady?.Invoke();
 
@@ -181,7 +160,7 @@ namespace VeldridNSViewExample
         [DllImport(Library, EntryPoint = "NSAddressOfSymbol")]
         private static extern IntPtr NSAddressOfSymbol(IntPtr symbol);
 
-        public static IntPtr GetProcAddress(string function)
+        private IntPtr GetProcAddress(string function)
         {
             var ptr = Marshal.AllocHGlobal(function.Length + 2);
             try
@@ -203,7 +182,7 @@ namespace VeldridNSViewExample
             }
         }
 
-        public static IntPtr GetAddress(IntPtr function)
+        private IntPtr GetAddress(IntPtr function)
         {
             var symbol = IntPtr.Zero;
             if (NSIsSymbolNameDefined(function))
@@ -228,20 +207,27 @@ namespace VeldridNSViewExample
                 }
                 if (GraphicsDevice != null)
                 {
-                    BeginInvokeOnMainThread(() =>
-                    {
-                        if (_resized)
+                    BeginInvokeOnMainThread(() => {
+                        var rect = ConvertRectToBacking(Bounds).Size;
+                        if ((uint)rect.Width != Camera.Width || (uint)rect.Height != Camera.Height)
                         {
-                            _resized = false;
-                            if (Backend == GraphicsBackend.OpenGL)
-                            {
-                                context.Update();
-                            }
-                            MainSwapchain.Resize(Width, Height);
-                            Resized?.Invoke();
+                            Camera.Width = (uint)rect.Width;
+                            Camera.Height = (uint)rect.Height;
+                            _resized = true;
                         }
-                        Rendering?.Invoke();
                     });
+
+                    if (_resized)
+                    {
+                        _resized = false;
+                        if (Backend == GraphicsBackend.OpenGL)
+                        {
+                            _context.Update();
+                        }
+                        MainSwapchain.Resize(Camera.Width, Camera.Height);
+                        Resized?.Invoke();
+                    }
+                    Rendering?.Invoke();
                 }
             }
             catch (Exception e)
@@ -260,6 +246,64 @@ namespace VeldridNSViewExample
         public void Resume()
         {
             _paused = false;
+        }
+
+        // Tracking
+
+        private CGPoint _mouseStart;
+        private NSTrackingArea _trackingArea;
+
+        public override void UpdateTrackingAreas()
+        {
+            base.UpdateTrackingAreas();
+            if (_trackingArea != null)
+            {
+                RemoveTrackingArea(_trackingArea);
+            }
+            var options = NSTrackingAreaOptions.MouseEnteredAndExited | NSTrackingAreaOptions.ActiveWhenFirstResponder;
+            _trackingArea = new NSTrackingArea(Bounds, options, this, null);
+            AddTrackingArea(_trackingArea);
+        }
+
+        public override void MouseDown(NSEvent theEvent)
+        {
+            base.MouseDown(theEvent);
+            _mouseStart = theEvent.LocationInWindow;
+        }
+
+        public override void MouseUp(NSEvent theEvent)
+        {
+            base.MouseUp(theEvent);
+            _rotationX = _rotationX + _rotationOffsetX;
+            _rotationY = _rotationY + _rotationOffsetY;
+            _rotationOffsetX = 0;
+            _rotationOffsetY = 0;
+            Camera.RotationX = _rotationX + _rotationOffsetX;
+            Camera.RotationY = _rotationY + _rotationOffsetY;
+        }
+
+        public override void MouseDragged(NSEvent theEvent)
+        {
+            base.MouseDragged(theEvent);
+            _rotationOffsetX = (float)_mouseStart.Y - (float)theEvent.LocationInWindow.Y;
+            _rotationOffsetY = (float)theEvent.LocationInWindow.X - (float)_mouseStart.X;
+            Camera.RotationX = _rotationX + _rotationOffsetX;
+            Camera.RotationY = _rotationY + _rotationOffsetY;
+        }
+
+        public float Clamp(float value, float min, float max)
+        {
+            return Math.Min(Math.Max(value, min), max);
+        }
+
+        public override void ScrollWheel(NSEvent theEvent)
+        {
+            base.ScrollWheel(theEvent);
+            var near = Camera.Near + Camera.ModelScale;
+            var far = Camera.Far - Camera.ModelScale;
+            var step = (far - near) / 50.0f;
+            var result = (float)theEvent.ScrollingDeltaY > 0 ? (Camera.Eye.Z + step) : (Camera.Eye.Z - step);
+            Camera.Eye = new Vector3(0, 0, Clamp(result, near, far));
         }
     }
 }

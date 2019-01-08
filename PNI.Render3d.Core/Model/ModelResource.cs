@@ -1,4 +1,4 @@
-﻿namespace PNI.Rendering.Harmony
+﻿namespace PNI.Rendering.Harmony.Model
 {
     public class ModelResource
     {

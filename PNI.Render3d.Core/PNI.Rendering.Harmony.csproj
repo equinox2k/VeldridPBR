@@ -21,16 +21,10 @@
     <Folder Include="Helpers\" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Shaders\DepthLimitedBlur.frag.spv" />
-    <None Remove="Shaders\DepthLimitedBlur.vert.spv" />
-    <None Remove="Shaders\DepthNormal.frag.spv" />
-    <None Remove="Shaders\DepthNormal.vert.spv" />
     <None Remove="Shaders\Model.frag.spv" />
     <None Remove="Shaders\Model.vert.spv" />
     <None Remove="Shaders\Output.frag.spv" />
     <None Remove="Shaders\Output.vert.spv" />
-    <None Remove="Shaders\Sao.frag.spv" />
-    <None Remove="Shaders\Sao.vert.spv" />
     <None Remove="Resources\brdf.png" />
     <None Remove="Resources\bumpmap.jpg" />
     <None Remove="Resources\diffuse.png" />
@@ -61,16 +55,10 @@
     <None Remove="Resources\gloss_negy.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Shaders\DepthLimitedBlur.frag.spv" />
-    <EmbeddedResource Include="Shaders\DepthLimitedBlur.vert.spv" />
-    <EmbeddedResource Include="Shaders\DepthNormal.frag.spv" />
-    <EmbeddedResource Include="Shaders\DepthNormal.vert.spv" />
     <EmbeddedResource Include="Shaders\Model.frag.spv" />
     <EmbeddedResource Include="Shaders\Model.vert.spv" />
     <EmbeddedResource Include="Shaders\Output.frag.spv" />
     <EmbeddedResource Include="Shaders\Output.vert.spv" />
-    <EmbeddedResource Include="Shaders\Sao.frag.spv" />
-    <EmbeddedResource Include="Shaders\Sao.vert.spv" />
     <EmbeddedResource Include="Resources\brdf.png" />
     <EmbeddedResource Include="Resources\bumpmap.jpg" />
     <EmbeddedResource Include="Resources\diffuse.png" />
@@ -107,6 +95,7 @@
     <PackageReference Include="Veldrid.OpenGLBindings" Version="4.5.1-gfd65f6930a" />
     <PackageReference Include="Veldrid.MetalBindings" Version="4.5.1-gfd65f6930a" />
     <PackageReference Include="Veldrid" Version="4.5.1-gfd65f6930a" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-dev002311" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-dev002315" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-dev002315" />
   </ItemGroup>
 </Project>

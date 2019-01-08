@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Numerics;
-using PNI.Render3d.Core.Helpers;
+using PNI.Rendering.Harmony.Helpers;
 using PNI.Rendering.Harmony;
 using SixLabors.ImageSharp;
 using Veldrid;
 using Veldrid.ImageSharp;
 using Veldrid.SPIRV;
+using PNI.Rendering.Harmony.Model;
+using SixLabors.Primitives;
 
-namespace PNI.Render3d.Core.Render
+namespace PNI.Rendering.Harmony.Render
 {
     public class ModelRender : BaseRender
     {
@@ -47,7 +49,9 @@ namespace PNI.Render3d.Core.Render
         private readonly Sampler _pointSampler;
         private readonly ResourceSet _outputVertSet0;
         private readonly ResourceSet _outputFragSet1;
-        private readonly Pipeline _pipeline;
+        private readonly ResourceLayout _outputFragLayout2;
+        private readonly Pipeline _pipelineNormal;
+        private readonly Pipeline _pipelineGlass;
 
         public Texture GetColorTarget()
         {
@@ -88,15 +92,17 @@ namespace PNI.Render3d.Core.Render
             _textureEnvMapSpecularView = _graphicsDevice.ResourceFactory.CreateTextureView(_textureEnvMapSpecular);
             _textureEnvMapGloss = LoadCube("gloss").CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory);
             _textureEnvMapGlossView = _graphicsDevice.ResourceFactory.CreateTextureView(_textureEnvMapGloss);
-            _textureBRDF = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("PNI.Render3d.Core.Resources.brdf.png")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
+            _textureBRDF = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("PNI.Rendering.Harmony.Resources.brdf.png")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
             _textureBRDFView = _graphicsDevice.ResourceFactory.CreateTextureView(_textureBRDF);
-            _textureDiffuse = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("PNI.Render3d.Core.Resources.diffuse.png")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
+
+            _textureDiffuse = new ImageSharpTexture(Imaging.CreateImage(new Size(1, 1))).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
             _textureDiffuseView = _graphicsDevice.ResourceFactory.CreateTextureView(_textureDiffuse);
-            _textureBumpmap = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("PNI.Render3d.Core.Resources.bumpmap.jpg")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
+            _textureBumpmap = new ImageSharpTexture(Imaging.CreateImage(new Size(1, 1))).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
             _textureBumpmapView = _graphicsDevice.ResourceFactory.CreateTextureView(_textureBumpmap);
-            _textureEffect = new ImageSharpTexture(ResourceLoader.GetEmbeddedResourceStream("PNI.Render3d.Core.Resources.gloss_negx.jpg")).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
+            _textureEffect = new ImageSharpTexture(Imaging.CreateImage(new Size(1, 1))).CreateDeviceTexture(_graphicsDevice, _graphicsDevice.ResourceFactory); 
             _textureEffectView = _graphicsDevice.ResourceFactory.CreateTextureView(_textureEffect);
-            _linearSampler = graphicsDevice.LinearSampler;
+
+            _linearSampler = graphicsDevice.Aniso4xSampler;
             _pointSampler = graphicsDevice.PointSampler;
 
             var crossCompileOptions = new CrossCompileOptions(true, false); 
@@ -126,19 +132,31 @@ namespace PNI.Render3d.Core.Render
                     new ResourceLayoutElementDescription("TextureEnvMapSpecular", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("TextureEnvMapGloss", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("TextureBRDF", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("TextureDiffuse", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("TextureBumpmap", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("TextureEffect", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("LinearSampler", ResourceKind.Sampler, ShaderStages.Fragment),
                     new ResourceLayoutElementDescription("PointSampler", ResourceKind.Sampler, ShaderStages.Fragment)));
 
-            _pipeline = _graphicsDevice.ResourceFactory.CreateGraphicsPipeline(new GraphicsPipelineDescription(
+            _outputFragLayout2 = _graphicsDevice.ResourceFactory.CreateResourceLayout(
+                new ResourceLayoutDescription(
+                    new ResourceLayoutElementDescription("TextureDiffuse", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
+                    new ResourceLayoutElementDescription("TextureBumpmap", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
+                    new ResourceLayoutElementDescription("TextureEffect", ResourceKind.TextureReadOnly, ShaderStages.Fragment)));
+
+            _pipelineNormal = _graphicsDevice.ResourceFactory.CreateGraphicsPipeline(new GraphicsPipelineDescription(
                 BlendStateDescription.SingleOverrideBlend,
                 DepthStencilStateDescription.DepthOnlyLessEqual,
                 new RasterizerStateDescription(FaceCullMode.Back, PolygonFillMode.Solid, FrontFace.CounterClockwise, true, false),
                 PrimitiveTopology.TriangleList,
                 shaderSet,
-                new[] { outputVertLayout0, outputFragLayout1 },
+                new[] { outputVertLayout0, outputFragLayout1, _outputFragLayout2 },
+                _framebuffer.OutputDescription));
+
+            _pipelineGlass = _graphicsDevice.ResourceFactory.CreateGraphicsPipeline(new GraphicsPipelineDescription(
+                BlendStateDescription.SingleAdditiveBlend,
+                DepthStencilStateDescription.DepthOnlyLessEqual,
+                new RasterizerStateDescription(FaceCullMode.None, PolygonFillMode.Solid, FrontFace.CounterClockwise, true, false),
+                PrimitiveTopology.TriangleList,
+                shaderSet,
+                new[] { outputVertLayout0, outputFragLayout1, _outputFragLayout2 },
                 _framebuffer.OutputDescription));
 
             _outputVertSet0 = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
@@ -163,14 +181,11 @@ namespace PNI.Render3d.Core.Render
                 _textureEnvMapSpecularView,
                 _textureEnvMapGlossView,
                 _textureBRDFView,
-                _textureDiffuseView,
-                _textureBumpmapView,
-                _textureEffectView,
                 _linearSampler,
                 _pointSampler));
         }
 
-        public void Update(CommandList commandList, SurfaceGroups surfaceGroups, string option)
+        public void Update(CommandList commandList, SurfaceGroups surfaceGroups, string option, float effectValue)
         {
             commandList.UpdateBuffer(_isUvOriginTopLeftBuffer, 0, _graphicsDevice.IsUvOriginTopLeft ? 1 : 0);
             commandList.UpdateBuffer(_modelMatrixBuffer, 0, _camera.ModelMatrix);
@@ -180,51 +195,87 @@ namespace PNI.Render3d.Core.Render
             var lightRotation = MathHelper.DegreesToRadians(45);
             var lightPitch = MathHelper.DegreesToRadians(315);
             var lightDirection = new Vector3((float)(Math.Sin(lightRotation) * Math.Cos(lightPitch)), (float)Math.Sin(lightPitch), (float)(Math.Cos(lightRotation) * Math.Cos(lightPitch)));
-            const float lightIntensity = 2.0f;
+            const float lightIntensity = 0.5f;
             var lightColor = new Vector3(lightIntensity, lightIntensity, lightIntensity);
 
-            commandList.UpdateBuffer(_diffuseColorBuffer, 0, new Vector4(0.5f, 0.1f, 0.1f, 1));
-            commandList.UpdateBuffer(_useTextureDiffuse, 0, 0);
-            commandList.UpdateBuffer(_useTextureBumpmap, 0, 1);
-            commandList.UpdateBuffer(_useTextureEffect, 0, 1);
-            commandList.UpdateBuffer(_effect, 0, new Vector4());
+            var currentEffectValue = (float)(1.0f - Math.Max(Math.Sin((270 + effectValue) * (Math.PI / 180.0f)), 0.0f));
+
             commandList.UpdateBuffer(_lightDirection, 0, lightDirection);
             commandList.UpdateBuffer(_lightColor, 0, lightColor);
-            commandList.UpdateBuffer(_metallicRoughnessValues, 0, new Vector2(0.5f, 0.5f));
             commandList.UpdateBuffer(_cameraPosition, 0, _camera.Eye);
 
             commandList.SetFramebuffer(_framebuffer);
             commandList.ClearColorTarget(0, RgbaFloat.Clear);
             commandList.ClearDepthStencil(1f);
-            commandList.SetPipeline(_pipeline);
             commandList.SetVertexBuffer(0, surfaceGroups.VertexBuffer);
             commandList.SetIndexBuffer(surfaceGroups.IndexBuffer, IndexFormat.UInt32);
-            commandList.SetGraphicsResourceSet(0, _outputVertSet0);
-            commandList.SetGraphicsResourceSet(1, _outputFragSet1);
 
-            foreach (var surfaceGroupInfo in surfaceGroups.SurfaceGroupInfos)
+            var currentOption = string.IsNullOrEmpty(option) ? "Default" : option;
+
+            for (var j = 0; j < 2; j++)
             {
-                var properties = surfaceGroupInfo.Properties as SurfaceProperties;
-                if (!option.Equals("Default", StringComparison.CurrentCultureIgnoreCase))
+                foreach (var surfaceGroupInfo in surfaceGroups.SurfaceGroupInfos)
                 {
-                    var surfaceRootProperties = surfaceGroupInfo.Properties;
-                    foreach (var surfaceOption in surfaceRootProperties.Options)
+                    var properties = surfaceGroupInfo.Properties as SurfaceProperties;
+         
+                    if (!currentOption.Equals("Default", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        if (!surfaceOption.OptionName.Equals(option, StringComparison.CurrentCultureIgnoreCase))
+                        var surfaceRootProperties = surfaceGroupInfo.Properties;
+                        foreach (var surfaceOption in surfaceRootProperties.Options)
                         {
-                            continue;
+                            if (!surfaceOption.OptionName.Equals(option, StringComparison.CurrentCultureIgnoreCase))
+                            {
+                                continue;
+                            }
+                            properties = surfaceOption;
+                            break;
                         }
-                        properties = surfaceOption;
-                        break;
+                    }
+
+                    if (!properties.Render)
+                    {
+                        continue;
+                    }
+
+                    var textureDiffuse = properties.Diffuse.TextureView ?? _textureDiffuseView;
+                    var textureBumpmap = properties.Bumpmap.TextureView ?? _textureBumpmapView;
+                    var textureEffect = properties.Effect.TextureView ?? _textureEffectView;
+
+                    using (var outputFragSet2 = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(_outputFragLayout2, textureDiffuse, textureBumpmap, textureEffect)))
+                    {
+                        var useDiffuse = properties.Diffuse.TextureView != null ? 1 : 0;
+                        commandList.UpdateBuffer(_useTextureDiffuse, 0, useDiffuse);
+
+                        var useBumpmap = properties.Bumpmap.TextureView != null ? 1 : 0;
+                        commandList.UpdateBuffer(_useTextureBumpmap, 0, 0);
+
+                        var useEffect = properties.Effect.TextureView != null ? 1 : 0;
+                        commandList.UpdateBuffer(_useTextureEffect, 0, useEffect);
+
+                        commandList.UpdateBuffer(_metallicRoughnessValues, 0, new Vector2(properties.Metalness, properties.Roughness));
+                        commandList.UpdateBuffer(_effect, 0, new Vector4((float)properties.EffectType, currentEffectValue, surfaceGroups.MinDimension.Y, surfaceGroups.MaxDimension.Y));
+
+                        var diffuseColor = ColorHelper.HexToFloatArray(properties.DiffuseColor);
+                        commandList.UpdateBuffer(_diffuseColorBuffer, 0, new Vector4(diffuseColor[0], diffuseColor[1], diffuseColor[2], diffuseColor[3]));
+
+                        if (properties.SurfaceType == SurfaceTypeEnum.Glass && j == 1)
+                        {
+                            commandList.SetPipeline(_pipelineGlass);
+                            commandList.SetGraphicsResourceSet(0, _outputVertSet0);
+                            commandList.SetGraphicsResourceSet(1, _outputFragSet1);
+                            commandList.SetGraphicsResourceSet(2, outputFragSet2);
+                            commandList.DrawIndexed(surfaceGroupInfo.IndexCount, 1, surfaceGroupInfo.IndexOffset, 0, 0);
+                        }
+                        else if (properties.SurfaceType != SurfaceTypeEnum.Glass && j == 0)
+                        {
+                            commandList.SetPipeline(_pipelineNormal);
+                            commandList.SetGraphicsResourceSet(0, _outputVertSet0);
+                            commandList.SetGraphicsResourceSet(1, _outputFragSet1);
+                            commandList.SetGraphicsResourceSet(2, outputFragSet2);
+                            commandList.DrawIndexed(surfaceGroupInfo.IndexCount, 1, surfaceGroupInfo.IndexOffset, 0, 0);
+                        }
                     }
                 }
-
-                if (!properties.Render)
-                {
-                    continue;
-                }
-
-                commandList.DrawIndexed(surfaceGroupInfo.IndexCount, 1, surfaceGroupInfo.IndexOffset, 0, 0);
             }
         }
     }

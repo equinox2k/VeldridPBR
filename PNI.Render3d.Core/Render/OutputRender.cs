@@ -4,7 +4,7 @@ using Veldrid;
 using Veldrid.ImageSharp;
 using Veldrid.SPIRV;
 
-namespace PNI.Render3d.Core.Render
+namespace PNI.Rendering.Harmony.Render
 {
     public class OutputRender : BaseRender
     {
@@ -56,8 +56,7 @@ namespace PNI.Render3d.Core.Render
                     
             _outputFragLayout2 = graphicsDevice.ResourceFactory.CreateResourceLayout(
                 new ResourceLayoutDescription(
-                    new ResourceLayoutElementDescription("TextureDiffuse", ResourceKind.TextureReadOnly, ShaderStages.Fragment),
-                    new ResourceLayoutElementDescription("TextureAmbientOcclusion", ResourceKind.TextureReadOnly, ShaderStages.Fragment)));
+                    new ResourceLayoutElementDescription("TextureDiffuse", ResourceKind.TextureReadOnly, ShaderStages.Fragment)));
 
             _pipeline = graphicsDevice.ResourceFactory.CreateGraphicsPipeline(new GraphicsPipelineDescription(
                 BlendStateDescription.SingleOverrideBlend,
@@ -82,12 +81,11 @@ namespace PNI.Render3d.Core.Render
                 graphicsDevice.LinearSampler));
         }
 
-        public void Update(CommandList commandList, Mesh screenMesh, Texture diffuseTexture, Texture textureAmbientOcclusion)
+        public void Update(CommandList commandList, Mesh screenMesh, Texture diffuseTexture)
         {
             using (var outputFragSet2 = _graphicsDevice.ResourceFactory.CreateResourceSet(new ResourceSetDescription(
                 _outputFragLayout2,
-                _graphicsDevice.ResourceFactory.CreateTextureView(diffuseTexture),
-                _graphicsDevice.ResourceFactory.CreateTextureView(textureAmbientOcclusion))))
+                _graphicsDevice.ResourceFactory.CreateTextureView(diffuseTexture))))
             {
                 commandList.UpdateBuffer(_isUvOriginTopLeftBuffer, 0, _graphicsDevice.IsUvOriginTopLeft ? 1 : 0);
                 commandList.UpdateBuffer(_opacityBuffer, 0, 1.0f);

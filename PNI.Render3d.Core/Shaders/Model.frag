@@ -58,15 +58,15 @@ layout(set = 1, binding = 12) uniform textureCube TextureEnvMapGloss;
 
 layout(set = 1, binding = 13) uniform texture2D TextureBRDF;
 
-layout(set = 1, binding = 14) uniform texture2D TextureDiffuse;
+layout(set = 1, binding = 14) uniform sampler LinearSampler;
 
-layout(set = 1, binding = 15) uniform texture2D TextureBumpmap;
+layout(set = 1, binding = 15) uniform sampler PointSampler;
 
-layout(set = 1, binding = 16) uniform texture2D TextureEffect;
+layout(set = 2, binding = 0) uniform texture2D TextureDiffuse;
 
-layout(set = 1, binding = 17) uniform sampler LinearSampler;
+layout(set = 2, binding = 1) uniform texture2D TextureBumpmap;
 
-layout(set = 1, binding = 18) uniform sampler PointSampler;
+layout(set = 2, binding = 2) uniform texture2D TextureEffect;
 
 layout(location = 0) in vec3 iPosition;
 layout(location = 1) in vec2 iTexCoord;

@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace PNI.Render3d.Core.Helpers
+namespace PNI.Rendering.Harmony.Helpers
 {
     public static class HashHelper
     {

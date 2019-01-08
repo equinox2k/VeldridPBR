@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Veldrid.Mac", "Veldrid.Mac\Veldrid.Mac.csproj", "{A23FD9D1-BA74-4036-AD30-E245EC55E39A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PNI.Render3d.Core", "PNI.Render3d.Core\PNI.Render3d.Core.csproj", "{60B7C3C3-3AF4-4B26-9D70-354DC252B990}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PNI.Rendering.Harmony", "PNI.Render3d.Core\PNI.Rendering.Harmony.csproj", "{60B7C3C3-3AF4-4B26-9D70-354DC252B990}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,8 +1,8 @@
 ﻿using System.Numerics;
 using System.Text;
-using PNI.Render3d.Core.Helpers;
+using PNI.Rendering.Harmony.Helpers;
 
-namespace PNI.Render3d.Core
+namespace PNI.Rendering.Harmony
 {
     public struct Vertex
     {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Numerics;
-using PNI.Render3d.Core;
+using PNI.Rendering.Harmony;
 using Veldrid;
 
-namespace PNI.Rendering.Harmony
+namespace PNI.Rendering.Harmony.Model
 {
     public class SurfaceGroups : IDisposable
     {
@@ -28,7 +28,7 @@ namespace PNI.Rendering.Harmony
             Vertices = new Vertex[] { };
         }
 
-        public void CreateBuffers(ResourceFactory resourceFactory, GraphicsDevice graphicsDevice)
+        public void CreateBuffers(GraphicsDevice graphicsDevice, ResourceFactory resourceFactory)
         {
             DeleteBuffers();
             VertexBuffer = resourceFactory.CreateBuffer(new BufferDescription((uint)(Vertex.SizeInBytes * Vertices.Length), BufferUsage.VertexBuffer));

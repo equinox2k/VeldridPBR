@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
 
-namespace PNI.Rendering.Harmony
+namespace PNI.Rendering.Harmony.Model
 {
     [DataContract]
     public class SurfacePropertiesOption : SurfaceProperties

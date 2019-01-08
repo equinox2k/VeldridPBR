@@ -1,20 +1,29 @@
 ﻿using System;
 using System.Numerics;
-using PNI.Render3d.Core.Helpers;
+using PNI.Rendering.Harmony.Helpers;
 
-namespace PNI.Render3d.Core
+namespace PNI.Rendering.Harmony
 {
     public class Camera
     {
-
+        public float ModelScale { get; set; } = 1.0f;
         public float Fov { get; set; } = 45.0f;
         public float Near { get; set; } = 1.0f;
         public float Far { get; set; } = 200.0f;
         public uint Width { get; set; } = 1;
         public uint Height { get; set; } = 1;
+        public float RotationX { get; set; } = 0;
+        public float RotationY { get; set; } = 0;
         public Vector3 Eye { get; set; } = new Vector3(0, 0, 100);
 
-        public Matrix4x4 ModelMatrix { get; set; } = Matrix4x4.Identity;
+        public Matrix4x4 ModelMatrix
+        {
+            get
+            {
+               return Matrix4x4.CreateFromAxisAngle(Vector3.UnitY, MathHelper.DegreesToRadians(RotationY)) * 
+                      Matrix4x4.CreateFromAxisAngle(Vector3.UnitX, MathHelper.DegreesToRadians(RotationX));
+            }
+        }
 
         public Matrix4x4 ViewMatrix
         {
@@ -76,11 +85,11 @@ namespace PNI.Render3d.Core
             }
         }
 
-        public float CalcZoom(float scale)
+        public float CalcZoom()
         {
             var angle = Fov / 2.0f;
-            var adjacent = scale / 2.0f / (float)Math.Tan(angle * (Math.PI / 180.0f));
-            return adjacent + Near + scale / 2.0f;
+            var adjacent = ModelScale / 2.0f / (float)Math.Tan(angle * (Math.PI / 180.0f));
+            return adjacent + Near + ModelScale / 2.0f;
         }
 
     }

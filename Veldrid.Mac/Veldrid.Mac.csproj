@@ -111,7 +111,19 @@
       <HintPath>..\packages\SixLabors.Core.1.0.0-dev000094\lib\netstandard2.0\SixLabors.Core.dll</HintPath>
     </Reference>
     <Reference Include="SixLabors.ImageSharp">
-      <HintPath>..\packages\SixLabors.ImageSharp.1.0.0-dev002311\lib\netstandard2.0\SixLabors.ImageSharp.dll</HintPath>
+      <HintPath>..\packages\SixLabors.ImageSharp.1.0.0-dev002315\lib\netstandard2.0\SixLabors.ImageSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Veldrid.ImageSharp">
+      <HintPath>..\packages\Veldrid.ImageSharp.4.5.1-gfd65f6930a\lib\netstandard2.0\Veldrid.ImageSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="SixLabors.Fonts">
+      <HintPath>..\packages\SixLabors.Fonts.1.0.0-dev000119\lib\netstandard2.0\SixLabors.Fonts.dll</HintPath>
+    </Reference>
+    <Reference Include="SixLabors.Shapes">
+      <HintPath>..\packages\SixLabors.Shapes.1.0.0-dev000102\lib\netstandard2.0\SixLabors.Shapes.dll</HintPath>
+    </Reference>
+    <Reference Include="SixLabors.ImageSharp.Drawing">
+      <HintPath>..\packages\SixLabors.ImageSharp.Drawing.1.0.0-dev002315\lib\netstandard2.0\SixLabors.ImageSharp.Drawing.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -141,6 +153,7 @@
     <Compile Include="AppDelegate.cs" />
     <Compile Include="ViewController.cs" />
     <Compile Include="VeldridView.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="Main.storyboard" />
@@ -152,9 +165,9 @@
     </NativeReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\PNI.Render3d.Core\PNI.Render3d.Core.csproj">
+    <ProjectReference Include="..\PNI.Render3d.Core\PNI.Rendering.Harmony.csproj">
       <Project>{60B7C3C3-3AF4-4B26-9D70-354DC252B990}</Project>
-      <Name>PNI.Render3d.Core</Name>
+      <Name>PNI.Rendering.Harmony</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Mac\Xamarin.Mac.CSharp.targets" />

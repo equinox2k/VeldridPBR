@@ -1,5 +1,5 @@
 ﻿using System;
-namespace PNI.Render3d.Core.Helpers
+namespace PNI.Rendering.Harmony.Helpers
 {
     public static class MathHelper
     {

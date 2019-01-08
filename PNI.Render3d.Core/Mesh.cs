@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using Veldrid;
 
-namespace PNI.Render3d.Core
+namespace PNI.Rendering.Harmony
 {
     public class Mesh : IDisposable
     {
